@@ -9,6 +9,35 @@ import { fetchListingById } from "@/lib/queries";
 import { cn } from "@/lib/utils";
 import type { Listing } from "@/types/listing";
 
+function MapCard({ lat, lng }: { lat: number; lng: number }) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  return (
+    <Card className="border-dom-border/60 bg-dom-card rounded-2xl shadow-moss">
+      <CardContent className="p-5 space-y-2">
+        <h2 className="font-fraunces font-700 text-sm text-dom-fg">Location</h2>
+        <div className="rounded-xl overflow-hidden bg-dom-muted h-48">
+          {mounted && apiKey ? (
+            <iframe
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+              src={`https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${lat},${lng}&zoom=15`}
+            />
+          ) : (
+            <div className="h-full flex items-center justify-center">
+              <span className="font-nunito text-sm text-dom-muted-fg">Loading map...</span>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function proximityBadge(label: string, meters: number | null) {
   if (meters == null) return null;
   const text = meters < 1000 ? `${meters}m` : `${(meters / 1000).toFixed(1)}km`;
@@ -208,21 +237,7 @@ export default function ListingDetailPage() {
             </Card>
 
             {listing.latitude && listing.longitude && (
-              <Card className="border-dom-border/60 bg-dom-card rounded-2xl shadow-moss">
-                <CardContent className="p-5 space-y-2">
-                  <h2 className="font-fraunces font-700 text-sm text-dom-fg">Location</h2>
-                  <div className="rounded-xl overflow-hidden bg-dom-muted h-48">
-                    <iframe
-                      width="100%"
-                      height="100%"
-                      style={{ border: 0 }}
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
-                      src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ""}&q=${listing.latitude},${listing.longitude}&zoom=15`}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+              <MapCard lat={listing.latitude} lng={listing.longitude} />
             )}
           </div>
         </div>

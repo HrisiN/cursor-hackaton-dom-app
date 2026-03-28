@@ -17,8 +17,11 @@ function formatPrice(price: number, dealType: "rent" | "sale"): string {
 
 export function ListingsMap({ listings }: ListingsMapProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+  useEffect(() => { setMounted(true); }, []);
 
   const geoListings = listings.filter((l) => l.latitude && l.longitude);
 
@@ -59,7 +62,7 @@ export function ListingsMap({ listings }: ListingsMapProps) {
       </div>
 
       <div className="relative flex-1 min-h-[350px]">
-        {mapSrc ? (
+        {mapSrc && mounted ? (
           <iframe
             width="100%"
             height="100%"

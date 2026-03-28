@@ -8,7 +8,7 @@ const translations = {
   // Navbar / layout
   "nav.search": { hr: "Pretraži", en: "Search" },
   "nav.zagreb": { hr: "Zagreb, HR", en: "Zagreb, HR" },
-  "nav.login": { hr: "Prijava", en: "Login" },
+  "nav.login": { hr: "Pretraži", en: "Search" },
   "footer.title": { hr: "Dom — Nekretnine Zagreb", en: "Dom — Zagreb Real Estate" },
   "footer.source": { hr: "Podaci prikupljeni iz više agencija, ažurirano dnevno", en: "Data sourced from multiple agencies, updated daily" },
 
