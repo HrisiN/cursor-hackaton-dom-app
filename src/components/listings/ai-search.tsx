@@ -42,7 +42,7 @@ export function AiSearch({ onFiltersExtracted }: AiSearchProps) {
   }
 
   return (
-    <div className="rounded-xl border bg-gradient-to-r from-emerald-50 to-white p-4 shadow-sm space-y-2">
+    <div className="rounded-2xl border border-dom-border/60 bg-dom-primary-light/50 p-4 shadow-moss space-y-2">
       <div>
         <h3 className="font-semibold text-sm">Describe your ideal home</h3>
         <p className="text-xs text-muted-foreground">
@@ -61,7 +61,7 @@ export function AiSearch({ onFiltersExtracted }: AiSearchProps) {
         <Button
           onClick={handleSearch}
           disabled={loading || !query.trim()}
-          className="rounded-full bg-emerald-600 hover:bg-emerald-700 text-white px-6"
+          className="rounded-full bg-dom-primary hover:bg-dom-primary/90 text-white px-6 shadow-moss transition-all duration-300 hover:scale-105 active:scale-95"
         >
           {loading ? "Thinking..." : "Find"}
         </Button>

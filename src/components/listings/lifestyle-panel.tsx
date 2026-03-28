@@ -1,7 +1,9 @@
 "use client";
 
 import { Slider } from "@/components/ui/slider";
+import { TramFront, GraduationCap, Cross, TreePine, Coins } from "lucide-react";
 import type { LifestylePriorities } from "@/lib/scoring";
+import type { LucideIcon } from "lucide-react";
 
 interface LifestylePanelProps {
   priorities: LifestylePriorities;
@@ -10,26 +12,26 @@ interface LifestylePanelProps {
   onToggle: (enabled: boolean) => void;
 }
 
-const FACTORS: { key: keyof LifestylePriorities; label: string; icon: string }[] = [
-  { key: "transit", label: "Public transport", icon: "🚋" },
-  { key: "kindergarten", label: "Kindergartens & schools", icon: "🏫" },
-  { key: "hospital", label: "Hospital nearby", icon: "🏥" },
-  { key: "park", label: "Parks & green space", icon: "🌳" },
-  { key: "price", label: "Best price per m²", icon: "💰" },
+const FACTORS: { key: keyof LifestylePriorities; label: string; Icon: LucideIcon }[] = [
+  { key: "transit", label: "Public transport", Icon: TramFront },
+  { key: "kindergarten", label: "Kindergartens & schools", Icon: GraduationCap },
+  { key: "hospital", label: "Hospital nearby", Icon: Cross },
+  { key: "park", label: "Parks & green space", Icon: TreePine },
+  { key: "price", label: "Best price per m²", Icon: Coins },
 ];
 
 export function LifestylePanel({ priorities, onChange, enabled, onToggle }: LifestylePanelProps) {
   return (
-    <div className="rounded-xl border bg-white p-4 shadow-sm space-y-4">
+    <div className="rounded-2xl border border-dom-border/60 bg-dom-card p-4 shadow-moss space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-semibold text-sm">Lifestyle Match</h3>
-          <p className="text-xs text-muted-foreground">What matters most to you?</p>
+          <h3 className="font-fraunces font-700 text-sm">Lifestyle Match</h3>
+          <p className="text-xs text-dom-muted-fg font-nunito">What matters most to you?</p>
         </div>
         <button
           onClick={() => onToggle(!enabled)}
-          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-            enabled ? "bg-emerald-600" : "bg-gray-200"
+          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all duration-300 ${
+            enabled ? "bg-dom-primary" : "bg-dom-border"
           }`}
         >
           <span
@@ -42,11 +44,12 @@ export function LifestylePanel({ priorities, onChange, enabled, onToggle }: Life
 
       {enabled && (
         <div className="space-y-3">
-          {FACTORS.map(({ key, label, icon }) => (
+          {FACTORS.map(({ key, label, Icon }) => (
             <div key={key} className="space-y-1">
               <div className="flex items-center justify-between text-xs">
-                <span>
-                  {icon} {label}
+                <span className="flex items-center gap-1.5">
+                  <Icon className="h-3.5 w-3.5 text-emerald-600" />
+                  {label}
                 </span>
                 <span className="font-medium text-muted-foreground">{priorities[key]}/7</span>
               </div>

@@ -85,10 +85,10 @@ function ChipGroup({
             key={opt.label}
             onClick={() => onSelect(opt.value)}
             className={cn(
-              "rounded-full px-3 py-1.5 text-xs font-medium transition-all",
+              "rounded-full px-3 py-1.5 text-xs font-nunito font-600 transition-all duration-300",
               selected === opt.value || (selected === undefined && opt.value === undefined)
-                ? "bg-emerald-600 text-white shadow-sm"
-                : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                ? "bg-dom-primary text-white shadow-moss"
+                : "bg-dom-muted text-dom-muted-fg hover:border-dom-primary/40 hover:text-dom-fg"
             )}
           >
             {opt.label}
@@ -114,7 +114,7 @@ export function FilterBar({ filters, neighborhoods, onChange }: FilterBarProps) 
   );
 
   return (
-    <div className="space-y-4 rounded-xl border bg-white p-4 shadow-sm">
+    <div className="space-y-4 rounded-2xl border border-dom-border/60 bg-dom-card p-4 shadow-moss">
       {/* Row 1: Deal type + Neighborhood */}
       <div className="flex flex-wrap items-end gap-6">
         <ChipGroup
@@ -162,10 +162,10 @@ export function FilterBar({ filters, neighborhoods, onChange }: FilterBarProps) 
                   onChange({ ...filters, price_min: chip.min, price_max: chip.max });
                 }}
                 className={cn(
-                  "rounded-full px-3 py-1.5 text-xs font-medium transition-all",
+                  "rounded-full px-3 py-1.5 text-xs font-nunito font-600 transition-all duration-300",
                   activePriceChip === chip
-                    ? "bg-emerald-600 text-white shadow-sm"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                    ? "bg-dom-primary text-white shadow-moss"
+                    : "bg-dom-muted text-dom-muted-fg hover:border-dom-primary/40 hover:text-dom-fg"
                 )}
               >
                 {chip.label}
@@ -174,10 +174,10 @@ export function FilterBar({ filters, neighborhoods, onChange }: FilterBarProps) 
             <button
               onClick={() => setShowCustomPrice(!showCustomPrice)}
               className={cn(
-                "rounded-full px-3 py-1.5 text-xs font-medium transition-all",
+                "rounded-full px-3 py-1.5 text-xs font-nunito font-600 transition-all duration-300",
                 showCustomPrice || (!activePriceChip && (filters.price_min != null || filters.price_max != null))
-                  ? "bg-emerald-600 text-white shadow-sm"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                  ? "bg-dom-primary text-white shadow-moss"
+                  : "bg-dom-muted text-dom-muted-fg hover:border-dom-primary/40 hover:text-dom-fg"
               )}
             >
               Custom
@@ -218,10 +218,10 @@ export function FilterBar({ filters, neighborhoods, onChange }: FilterBarProps) 
                   onChange({ ...filters, area_min: chip.min, area_max: chip.max });
                 }}
                 className={cn(
-                  "rounded-full px-3 py-1.5 text-xs font-medium transition-all",
+                  "rounded-full px-3 py-1.5 text-xs font-nunito font-600 transition-all duration-300",
                   activeAreaChip === chip
-                    ? "bg-emerald-600 text-white shadow-sm"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                    ? "bg-dom-primary text-white shadow-moss"
+                    : "bg-dom-muted text-dom-muted-fg hover:border-dom-primary/40 hover:text-dom-fg"
                 )}
               >
                 {chip.label}
@@ -230,10 +230,10 @@ export function FilterBar({ filters, neighborhoods, onChange }: FilterBarProps) 
             <button
               onClick={() => setShowCustomArea(!showCustomArea)}
               className={cn(
-                "rounded-full px-3 py-1.5 text-xs font-medium transition-all",
+                "rounded-full px-3 py-1.5 text-xs font-nunito font-600 transition-all duration-300",
                 showCustomArea || (!activeAreaChip && (filters.area_min != null || filters.area_max != null))
-                  ? "bg-emerald-600 text-white shadow-sm"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                  ? "bg-dom-primary text-white shadow-moss"
+                  : "bg-dom-muted text-dom-muted-fg hover:border-dom-primary/40 hover:text-dom-fg"
               )}
             >
               Custom

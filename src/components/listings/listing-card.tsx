@@ -42,7 +42,7 @@ export function ListingCard({ listing, showScore }: ListingCardProps) {
 
   return (
     <Link href={`/listing/${listing.id}`}>
-      <Card className="group overflow-hidden transition-all hover:shadow-lg hover:-translate-y-0.5 py-0 gap-0">
+      <Card className="group overflow-hidden transition-all duration-350 hover:shadow-clay hover:-translate-y-1 hover:border-dom-primary/30 py-0 gap-0 border-dom-border/60 bg-dom-card">
         <div className="relative aspect-[16/10] overflow-hidden bg-muted">
           <img
             src={imageUrl}
@@ -55,8 +55,8 @@ export function ListingCard({ listing, showScore }: ListingCardProps) {
               className={cn(
                 "text-[10px] font-semibold uppercase",
                 listing.deal_type === "rent"
-                  ? "bg-blue-600 text-white"
-                  : "bg-amber-500 text-white"
+                  ? "bg-dom-primary text-white"
+                  : "bg-dom-secondary text-white"
               )}
             >
               {listing.deal_type === "rent" ? "Rent" : "Sale"}
@@ -91,9 +91,9 @@ export function ListingCard({ listing, showScore }: ListingCardProps) {
                 <span className="text-xs font-semibold">Dom Score</span>
                 <span
                   className={cn(
-                    "text-sm font-bold",
-                    listing.domScore >= 75 ? "text-emerald-600" :
-                    listing.domScore >= 50 ? "text-amber-500" : "text-red-500"
+                    "text-sm font-fraunces font-700",
+                    listing.domScore >= 75 ? "text-dom-primary" :
+                    listing.domScore >= 50 ? "text-dom-secondary" : "text-red-500"
                   )}
                 >
                   {listing.domScore}/100
@@ -103,8 +103,8 @@ export function ListingCard({ listing, showScore }: ListingCardProps) {
                 <div
                   className={cn(
                     "h-full rounded-full transition-all",
-                    listing.domScore >= 75 ? "bg-emerald-500" :
-                    listing.domScore >= 50 ? "bg-amber-400" : "bg-red-400"
+                    listing.domScore >= 75 ? "bg-dom-primary" :
+                    listing.domScore >= 50 ? "bg-dom-secondary" : "bg-red-400"
                   )}
                   style={{ width: `${listing.domScore}%` }}
                 />

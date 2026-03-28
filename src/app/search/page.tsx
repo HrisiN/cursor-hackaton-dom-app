@@ -2,11 +2,13 @@
 
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
+import { Map, LayoutGrid } from "lucide-react";
 import { FilterBar } from "@/components/filters/filter-bar";
 import { ListingCard } from "@/components/listings/listing-card";
 import { LifestylePanel } from "@/components/listings/lifestyle-panel";
 import { AiSearch } from "@/components/listings/ai-search";
 import { MarketInsight } from "@/components/listings/market-insight";
+import { ListingsMap } from "@/components/map/listings-map";
 import { fetchListings, fetchNeighborhoods } from "@/lib/queries";
 import { scoreListings, DEFAULT_PRIORITIES } from "@/lib/scoring";
 import type { Listing, ListingFilters, Neighborhood } from "@/types/listing";
@@ -25,6 +27,7 @@ export default function SearchPage() {
 
   const [lifestyleEnabled, setLifestyleEnabled] = useState(false);
   const [priorities, setPriorities] = useState<LifestylePriorities>(DEFAULT_PRIORITIES);
+  const [showMap, setShowMap] = useState(false);
 
   useEffect(() => {
     fetchNeighborhoods().then(setNeighborhoods);
@@ -69,11 +72,33 @@ export default function SearchPage() {
             <p className="text-sm text-muted-foreground">
               {loading ? "Searching..." : `${scoredListings.length} listings found`}
             </p>
-            {lifestyleEnabled && (
-              <p className="text-xs text-emerald-600 font-medium">
-                Sorted by Dom Score
-              </p>
-            )}
+            <div className="flex items-center gap-2">
+              {lifestyleEnabled && (
+                <p className="text-xs text-emerald-600 font-medium">
+                  Sorted by Dom Score
+                </p>
+              )}
+              <div className="flex rounded-lg border bg-muted/50 p-0.5">
+                <button
+                  onClick={() => setShowMap(false)}
+                  className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                    !showMap ? "bg-white text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <LayoutGrid className="h-3.5 w-3.5" />
+                  Grid
+                </button>
+                <button
+                  onClick={() => setShowMap(true)}
+                  className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
+                    showMap ? "bg-white text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Map className="h-3.5 w-3.5" />
+                  Map
+                </button>
+              </div>
+            </div>
           </div>
 
           {loading ? (
@@ -88,6 +113,10 @@ export default function SearchPage() {
               <p className="text-sm text-muted-foreground mt-1">
                 Try adjusting your filters or clearing them
               </p>
+            </div>
+          ) : showMap ? (
+            <div className="h-[600px]">
+              <ListingsMap listings={scoredListings} />
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
