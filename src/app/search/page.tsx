@@ -230,6 +230,16 @@ export default function SearchPage() {
                 {filters.rooms_min}+ {t("search.rooms_plus")}
               </span>
             )}
+            {filters.area_min && (
+              <span className="rounded-full bg-dom-muted px-2.5 py-0.5 font-nunito text-[11px] font-600 text-dom-fg">
+                Min {filters.area_min} m²
+              </span>
+            )}
+            {filters.text_query && (
+              <span className="rounded-full bg-dom-primary-light px-2.5 py-0.5 font-nunito text-[11px] font-600 text-dom-fg">
+                &ldquo;{filters.text_query}&rdquo;
+              </span>
+            )}
             <button onClick={() => setActiveModeRaw("filters")} className="font-nunito text-[11px] font-600 text-dom-primary hover:underline">
               {t("search.edit_filters")}
             </button>

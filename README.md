@@ -37,11 +37,12 @@ No more spreadsheets. No more 15 open tabs. Just one place that understands what
 
 ## Key Features
 
+- **200 real listings** — scraped from Index Oglasi with full descriptions, images, floor plans, and location data
 - **Three search modes** — AI natural language, traditional filters, lifestyle scoring
 - **Dom Lifestyle Score** — personalized ranking based on user-weighted priorities (transit, schools, parks, hospitals, price)
 - **Zagreb Market Pulse** — interactive historical price charts with HNB data, neighborhood breakdown, seasonal tips
 - **Bilingual UI** — full Croatian (default) and English support with one-click toggle
-- **Mock-resilient AI** — works seamlessly even when Gemini API is rate-limited, with 12 pre-built demo responses
+- **Offline-first data** — works without Supabase using bundled JSON; AI search falls back to local NLP when Gemini quota runs out
 - **Responsive organic design** — paper-like aesthetic with grain texture, ambient blobs, and smooth animations
 
 ---
@@ -63,17 +64,21 @@ dom/
 │   │   ├── map/          # Google Maps integration
 │   │   ├── layout/       # Navbar, footer, providers
 │   │   └── ui/           # shadcn/ui base components
+│   ├── data/             # Local scraped listings JSON (offline fallback)
 │   ├── lib/              # Supabase client, scoring, i18n, mock data
 │   └── types/            # TypeScript interfaces
 ├── scraping/             # Python scraping pipeline
-│   ├── adapters/         # One file per source
-│   ├── ingest.py         # Orchestrator
+│   ├── adapters/         # One file per source (index_adapter.py)
+│   ├── ingest.py         # Orchestrator — scrapes and upserts to Supabase
+│   ├── export_seed.py    # Export Supabase → local JSON + SQL files
 │   ├── fetch_pois.py     # Google Places → POIs table
 │   ├── compute_proximity.py
 │   └── requirements.txt
 └── supabase/
-    ├── schema.sql        # Full database schema
-    └── seed-listings.sql # Demo data
+    ├── schema.sql            # Full database schema
+    ├── seed-listings.sql     # Original demo data
+    ├── scraped-listings.json # Latest export (200 real listings)
+    └── scraped-listings.sql  # SQL insert version of the export
 ```
 
 ---
@@ -117,12 +122,12 @@ Open `.env.local` and fill in the values you need:
 | Variable | Required? | Description |
 |----------|-----------|-------------|
 | `NEXT_PUBLIC_SUPABASE_URL` | Optional | Supabase project URL |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Optional | Supabase anonymous key |
-| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Optional | Google Maps API key (for map view) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Optional | Supabase anon (public) key — **not** the service key |
+| `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Optional | Google Maps API key (for map embeds on listing pages) |
 | `GOOGLE_MAPS_SERVER_KEY` | Optional | Google Maps server key (for POI lookup) |
-| `GEMINI_API_KEY` | Optional | Gemini 2.0 Flash API key (for AI search) |
+| `GEMINI_API_KEY` | Optional | Gemini 2.0 Flash API key (for AI natural language search) |
 
-> **No keys? No problem.** The app runs fully without any API keys — it uses built-in mock listings, a local NLP parser for AI search, and placeholder maps.
+> **No keys? No problem.** The app ships with **200 real scraped listings** from Index Oglasi bundled in `src/data/scraped-listings.json`. When Supabase credentials are absent, the app loads from this local file automatically. AI search falls back to a local NLP parser, and maps show a placeholder.
 
 ### 4. Start the development server
 
@@ -137,41 +142,85 @@ Open [http://localhost:3000](http://localhost:3000) in your browser. That's it!
 ```bash
 npm run build
 npm start
-# → http://localhost:3000
+# -> http://localhost:3000
 ```
 
-### Supabase setup (optional — for real data)
+### Supabase setup (optional -- for live database)
 
-If you want to connect a real database:
+The app works out of the box with local data. To connect a live Supabase database:
 
 1. Create a project at [supabase.com](https://supabase.com)
-2. Enable the **PostGIS** extension (Dashboard → Database → Extensions)
+2. Enable the **PostGIS** extension (Dashboard -> Database -> Extensions)
 3. Run `supabase/schema.sql` in the SQL Editor
-4. Run `supabase/seed-listings.sql` for demo data
-5. Copy your project URL and anon key into `.env.local`
+4. Run `supabase/scraped-listings.sql` to load the 200 scraped listings
+5. Copy your project URL and **anon** key into `.env.local`
+
+> **Important:** Use the `anon` public key from Supabase Dashboard -> Settings -> API, not the service role key. The service key is server-only and will be rejected in the browser.
 
 ---
 
 ## Scraping Pipeline
 
+The scraper fetches real listings from **Index Oglasi** (index.hr), enriches each one with full details via their single-ad API, and upserts to Supabase. It then exports to local JSON/SQL so the frontend works without a database connection.
+
 ### Setup
 
 ```bash
 cd scraping
-python3 -m venv venv
+python -m venv venv
+# Windows:
+venv\Scripts\activate
+# macOS/Linux:
 source venv/bin/activate
+
 pip install -r requirements.txt
 cp .env.example .env
-# Fill in SUPABASE_URL, SUPABASE_SERVICE_KEY, GOOGLE_MAPS_SERVER_KEY
+# Fill in SUPABASE_URL and SUPABASE_SERVICE_KEY
 ```
 
-### Workflow
+### Running the scraper
 
-1. **Write an adapter** in `adapters/` (see `njuskalo_adapter.py` as template)
-2. **Register it** in `ingest.py` → `ADAPTER_REGISTRY`
-3. **Run**: `python ingest.py --source njuskalo`
-4. **Fetch POIs** (once): `python fetch_pois.py`
-5. **Compute proximity** (after POIs + listings): `python compute_proximity.py`
+```bash
+# Scrape Index Oglasi and upsert to Supabase
+python ingest.py --source index-hr
+
+# Export from Supabase to local JSON + SQL files
+python export_seed.py
+# Outputs: ../supabase/scraped-listings.json and ../supabase/scraped-listings.sql
+```
+
+Then copy the JSON to the frontend for offline use:
+
+```bash
+# From the project root:
+copy supabase\scraped-listings.json src\data\scraped-listings.json
+```
+
+### Scraper configuration (`scraping/.env`)
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `INDEX_MAX_SALE` | `100` | Max sale listings to collect from Zagreb |
+| `INDEX_MAX_RENT` | `100` | Max rent listings to collect from Zagreb |
+| `INDEX_MAX_PAGES` | `40` | Max API pages to scan per category |
+| `INDEX_BATCH_DELAY` | `2` | Seconds between page requests |
+| `INDEX_ENRICHMENT_DELAY` | `1.5` | Seconds between single-ad detail requests |
+| `INDEX_SKIP_DETAIL` | _(off)_ | Set to `1` to skip enrichment (faster but no descriptions) |
+| `INDEX_BROWSER_FALLBACK` | `1` | Use Playwright browser fallback if API is blocked |
+
+### How the data flows
+
+```
+Index.hr API  →  ingest.py  →  Supabase DB
+                                    ↓
+                             export_seed.py
+                                    ↓
+                     supabase/scraped-listings.json
+                                    ↓
+                        src/data/scraped-listings.json  →  Next.js frontend
+```
+
+The frontend reads `src/data/scraped-listings.json` at build time and maps addresses to Zagreb neighborhoods automatically. When Supabase credentials are configured, it reads from the live database instead.
 
 ### Adapter contract
 
@@ -187,7 +236,7 @@ Each adapter must export `fetch_listings() -> list[dict]` with at minimum:
 }
 ```
 
-Optional but valuable: `area_m2`, `rooms`, `floor`, `neighborhood`, `address`, `latitude`, `longitude`, `images` (list of URLs), `description`, `furnished`, `year_built`.
+The Index Oglasi adapter (`index_adapter.py`) extracts: `area_m2`, `rooms`, `floor`, `total_floors`, `year_built`, `furnished`, `address`, `latitude`, `longitude`, `images` (full CDN URLs), and `description`.
 
 ---
 

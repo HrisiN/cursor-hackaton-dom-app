@@ -29,6 +29,7 @@ ZAGREB_LAT_MAX = 45.98
 ZAGREB_LON_MIN = 15.75
 ZAGREB_LON_MAX = 16.20
 ZAGREB_COUNTY_ID = "056b6c84-e6f1-433f-8bdc-9b8dbb86d6fb"
+IMAGE_CDN = BASE + "/oglasi/api/image/direct/"
 
 S = requests.Session()
 S.headers.update(
@@ -255,13 +256,30 @@ def _normalize(ad: dict[str, Any], forced_deal: str | None = None) -> dict[str, 
         deal = "rent" if ("rent" in dt or "najam" in dt) else "sale"
 
     cat_path = CATEGORY_RENT if deal == "rent" else CATEGORY_SALE
+    smart = ad.get("smartLink") or ""
     slug = ad.get("friendlyUrl") or ad.get("url") or ""
     if isinstance(slug, str) and slug.startswith("http"):
         u = slug
     elif isinstance(slug, str) and slug.startswith("/"):
         u = BASE + slug
+    elif smart:
+        u = BASE + f"/oglasi/nekretnine/{cat_path}/oglas/{smart}/{eid}"
     else:
         u = BASE + f"/oglasi/nekretnine/{cat_path}/oglas/x/{eid}"
+
+    summary = ad.get("summary") or {}
+    if not isinstance(summary, dict):
+        summary = {}
+
+    address = ad.get("address") or ad.get("locationName") or None
+    if not address:
+        perm = ad.get("permutiveData") or {}
+        loc = perm.get("location") or []
+        if isinstance(loc, list) and len(loc) >= 3:
+            address = ", ".join(loc[2:]) if len(loc) > 2 else loc[-1]
+
+    desc_raw = ad.get("description") or ""
+    description = desc_raw.strip()[:20000] or None
 
     row: dict[str, Any] = {
         "external_id": eid,
@@ -271,24 +289,54 @@ def _normalize(ad: dict[str, Any], forced_deal: str | None = None) -> dict[str, 
         "currency": "EUR",
         "url": u[:2000],
         "city": "Zagreb",
-        "address": ad.get("address") or ad.get("locationName"),
-        "description": (ad.get("description") or "")[:20000] or None,
+        "address": address,
+        "description": description,
     }
     if ad.get("latitude") is not None:
         row["latitude"] = float(ad["latitude"])
     if ad.get("longitude") is not None:
         row["longitude"] = float(ad["longitude"])
 
-    area = ad.get("area") or ad.get("livingArea") or ad.get("stambenaPovrsina")
+    area = ad.get("area") or summary.get("area") or ad.get("livingArea")
     if area is not None:
         try:
             row["area_m2"] = float(area)
         except (TypeError, ValueError):
             pass
-    rm = ad.get("rooms") or ad.get("numberOfRooms")
+
+    rm = ad.get("numberOfRooms") or summary.get("numberOfRooms") or ad.get("rooms")
     if rm is not None:
         try:
             row["rooms"] = int(rm)
+        except (TypeError, ValueError):
+            pass
+
+    yb = ad.get("yearBuilt") or summary.get("yearBuilt")
+    if yb:
+        try:
+            yb_str = str(yb)
+            row["year_built"] = int(yb_str[:4])
+        except (TypeError, ValueError):
+            pass
+
+    floor = ad.get("flatFloorPosition")
+    if floor is not None:
+        try:
+            row["floor"] = int(floor)
+        except (TypeError, ValueError):
+            pass
+
+    total_floors = ad.get("numberOfStories") or ad.get("totalFloors")
+    if total_floors is not None:
+        try:
+            row["total_floors"] = int(total_floors)
+        except (TypeError, ValueError):
+            pass
+
+    furn = ad.get("furnishing")
+    if furn is not None:
+        try:
+            row["furnished"] = int(furn) in (1, 2)
         except (TypeError, ValueError):
             pass
 
@@ -297,11 +345,18 @@ def _normalize(ad: dict[str, Any], forced_deal: str | None = None) -> dict[str, 
         urls: list[str] = []
         for im in imgs[:24]:
             if isinstance(im, str):
-                urls.append(im)
+                raw = im
             elif isinstance(im, dict):
-                uu = im.get("url") or im.get("src") or im.get("imageUrl")
-                if uu:
-                    urls.append(str(uu))
+                raw = im.get("url") or im.get("src") or im.get("imageUrl") or ""
+                raw = str(raw) if raw else ""
+            else:
+                continue
+            if not raw:
+                continue
+            if raw.startswith("http"):
+                urls.append(raw)
+            else:
+                urls.append(IMAGE_CDN + raw)
         if urls:
             row["images"] = urls
 

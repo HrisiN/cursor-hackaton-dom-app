@@ -63,4 +63,5 @@ export interface ListingFilters {
   max_transit_m?: number;
   max_park_m?: number;
   sort_by?: "price_asc" | "price_desc" | "price_per_m2" | "newest" | "area_desc";
+  text_query?: string;
 }

@@ -160,16 +160,19 @@ function localParse(query: string): Record<string, unknown> {
   const q = query.toLowerCase();
   const filters: Record<string, unknown> = {};
 
-  if (q.includes("rent") || q.includes("najam") || q.match(/\d+\s*€?\s*\/\s*m/)) {
+  if (q.match(/\brent\b|\bnajam\b|\biznajm/i) || q.match(/\d+\s*€?\s*\/\s*m/)) {
     filters.deal_type = "rent";
-  } else if (q.includes("buy") || q.includes("sale") || q.includes("kupi") || q.includes("prodaj")) {
+  } else if (q.match(/\bbuy\b|\bsale\b|\bkupi\b|\bprodaj\b|\bkupnja\b|\bprodaja\b/i)) {
     filters.deal_type = "sale";
   }
 
-  const priceMatch = q.match(/(?:under|below|max|do|ispod|manje od)\s*(\d[\d,.]*)\s*(?:€|eur|euro)?/i)
-    ?? q.match(/(\d[\d,.]*)\s*(?:€|eur|euro)/i);
+  const priceMatch = q.match(/(?:under|below|max|do|ispod|manje od|jeftinije od)\s*(\d[\d.,]*)\s*(?:€|eur|euro|kn)?/i)
+    ?? q.match(/(\d[\d.,]*)\s*(?:€|eur|euro)/i);
   if (priceMatch) {
-    const price = parseFloat(priceMatch[1].replace(/,/g, ""));
+    const price = parseFloat(priceMatch[1].replace(/[.,]/g, (m, offset, str) => {
+      const afterDot = str.slice(offset + 1);
+      return afterDot.length <= 2 && !afterDot.includes(".") && !afterDot.includes(",") ? "." : "";
+    }));
     if (price > 0) {
       filters.price_max = price;
       if (!filters.deal_type) {
@@ -178,7 +181,7 @@ function localParse(query: string): Record<string, unknown> {
     }
   }
 
-  const roomMatch = q.match(/(\d)\s*(?:bed|room|sob|sobe|soba|bedroom|br)/i);
+  const roomMatch = q.match(/(\d)\s*(?:\+\d\s*)?(?:bed|room|sob|sobe|soba|bedroom|br|spavać)/i);
   if (roomMatch) {
     filters.rooms_min = parseInt(roomMatch[1]);
   }
@@ -188,16 +191,19 @@ function localParse(query: string): Record<string, unknown> {
     filters.area_min = parseInt(areaMatch[1]);
   }
 
+  let foundNeighborhood = false;
   for (const [alias, canonical] of Object.entries(NEIGHBORHOOD_ALIASES)) {
     if (q.includes(alias)) {
       filters.neighborhood = canonical;
+      foundNeighborhood = true;
       break;
     }
   }
-  if (!filters.neighborhood) {
+  if (!foundNeighborhood) {
     for (const name of NEIGHBORHOODS) {
       if (q.includes(name.toLowerCase())) {
         filters.neighborhood = name;
+        foundNeighborhood = true;
         break;
       }
     }
@@ -216,8 +222,23 @@ function localParse(query: string): Record<string, unknown> {
     filters.max_park_m = 500;
   }
 
-  if (q.match(/cheap|jeftin|lowest price|najjeftin/)) {
+  if (q.match(/cheap|jeftin|lowest price|najjeftin|povoljn/)) {
     filters.sort_by = "price_asc";
+  } else if (q.match(/expensive|skup|luxury|luksuz/)) {
+    filters.sort_by = "price_desc";
+  } else if (q.match(/big|large|velik|prostran|spacious/)) {
+    filters.sort_by = "area_desc";
+  } else if (q.match(/new|nov[oaie]|recent|zadnj/)) {
+    filters.sort_by = "newest";
+  }
+
+  const locationTerms = q.match(/(?:u|na|in|at|near|blizu|kod)\s+([\wčćžšđČĆŽŠĐ]+(?:\s+[\wčćžšđČĆŽŠĐ]+)?)/i);
+  if (locationTerms && !foundNeighborhood) {
+    filters.text_query = locationTerms[1];
+  }
+
+  if (Object.keys(filters).length === 0) {
+    filters.text_query = query.trim();
   }
 
   return filters;
@@ -239,10 +260,11 @@ Return a JSON object with ONLY the fields the user mentioned. Available fields:
 - max_transit_m: max distance to public transport in meters (number)
 - max_park_m: max distance to park in meters (number)
 - sort_by: "price_asc", "price_desc", "price_per_m2", "newest", or "area_desc"
-- address_query: if user mentions a specific street or landmark, extract it here
+- text_query: free text to search in listing titles, descriptions and addresses (use for street names, landmarks, specific features like "balkon", "garaža", "parking", "renoviran" etc.)
 
 When user says "near" or "close to" a POI type, use 500m as default distance.
 When user says "under X euros" and it's a small number (< 5000), assume rent. If large (> 10000), assume sale.
+Always try to extract at least one filter. If the query mentions a specific feature or location that doesn't match a neighborhood, put it in text_query.
 Do NOT include fields the user didn't mention. Return valid JSON only.`;
 
 export async function POST(req: NextRequest) {

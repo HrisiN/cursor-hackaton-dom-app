@@ -1,4 +1,105 @@
 import type { Listing, Neighborhood } from "@/types/listing";
+import scrapedRaw from "@/data/scraped-listings.json";
+
+interface RawScrapedListing {
+  external_id: string;
+  source: string;
+  url: string | null;
+  title: string;
+  deal_type: "rent" | "sale";
+  price: number;
+  currency: string;
+  area_m2: number | null;
+  rooms: number | null;
+  floor: number | null;
+  total_floors: number | null;
+  year_built: number | null;
+  furnished: boolean | null;
+  address: string | null;
+  city: string;
+  latitude: number | null;
+  longitude: number | null;
+  images: string[] | null;
+  description: string | null;
+  is_active: boolean;
+}
+
+const now = new Date().toISOString();
+
+const ADDRESS_TO_NEIGHBORHOOD: Record<string, string> = {
+  "donji grad": "Donji Grad",
+  "gornji grad": "Gornji Grad",
+  "gornji grad - medveščak": "Gornji Grad",
+  "medveščak": "Medveščak",
+  "trešnjevka - sjever": "Trešnjevka Sjever",
+  "trešnjevka - jug": "Trešnjevka Jug",
+  "maksimir": "Maksimir",
+  "novi zagreb - istok": "Novi Zagreb Istok",
+  "novi zagreb - zapad": "Novi Zagreb Zapad",
+  "trnje": "Trnje",
+  "črnomerec": "Črnomerec",
+  "stenjevec": "Stenjevec",
+  "podsljeme": "Podsljeme",
+  "peščenica - žitnjak": "Peščenica",
+  "peščenica": "Peščenica",
+  "gornja dubrava": "Gornja Dubrava",
+  "donja dubrava": "Donja Dubrava",
+  "sesvete": "Sesvete",
+  "podsused": "Podsused-Vrapče",
+  "vrapče": "Podsused-Vrapče",
+  "brezovica": "Brezovica",
+};
+
+function inferNeighborhood(address: string | null): string | null {
+  if (!address) return null;
+  const lower = address.toLowerCase();
+  const district = lower.split(",")[0].trim();
+  if (ADDRESS_TO_NEIGHBORHOOD[district]) return ADDRESS_TO_NEIGHBORHOOD[district];
+  for (const [key, value] of Object.entries(ADDRESS_TO_NEIGHBORHOOD)) {
+    if (lower.includes(key)) return value;
+  }
+  return null;
+}
+
+function toListing(raw: RawScrapedListing, idx: number): Listing {
+  const area = raw.area_m2 ?? null;
+  const ppm2 = area && area > 0 ? Math.round((raw.price / area) * 100) / 100 : null;
+  return {
+    id: `scraped-${raw.external_id}`,
+    external_id: raw.external_id,
+    source: raw.source,
+    url: raw.url,
+    title: raw.title,
+    deal_type: raw.deal_type,
+    price: raw.price,
+    currency: raw.currency,
+    area_m2: area,
+    price_per_m2: ppm2,
+    rooms: raw.rooms,
+    floor: raw.floor ?? null,
+    total_floors: raw.total_floors ?? null,
+    year_built: raw.year_built ?? null,
+    furnished: raw.furnished ?? null,
+    neighborhood: inferNeighborhood(raw.address),
+    address: raw.address,
+    city: raw.city ?? "Zagreb",
+    latitude: raw.latitude,
+    longitude: raw.longitude,
+    nearest_kindergarten_m: null,
+    nearest_school_m: null,
+    nearest_hospital_m: null,
+    nearest_transit_m: null,
+    nearest_park_m: null,
+    images: raw.images,
+    description: raw.description,
+    scraped_at: now,
+    created_at: now,
+    updated_at: now,
+    is_active: raw.is_active,
+  };
+}
+
+export const SCRAPED_LISTINGS: Listing[] = (scrapedRaw as RawScrapedListing[]).map(toListing);
 
 export const MOCK_NEIGHBORHOODS: Neighborhood[] = [
   { id: "donji-grad", name: "Donji Grad", city: "Zagreb", center_lat: 45.811, center_lng: 15.9785 },
@@ -21,7 +122,7 @@ export const MOCK_NEIGHBORHOODS: Neighborhood[] = [
   { id: "brezovica", name: "Brezovica", city: "Zagreb", center_lat: 45.74, center_lng: 15.91 },
 ];
 
-export const MOCK_LISTINGS: Listing[] = [
+const _LEGACY_MOCK: Listing[] = [
   {
     id: "mock-1",
     external_id: "NJ-10001",
@@ -418,4 +519,8 @@ export const MOCK_LISTINGS: Listing[] = [
     updated_at: new Date().toISOString(),
     is_active: true,
   },
-];
+] as Listing[];
+
+export const MOCK_LISTINGS: Listing[] = SCRAPED_LISTINGS.length > 0
+  ? SCRAPED_LISTINGS
+  : _LEGACY_MOCK;
