@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useI18n } from "@/lib/i18n";
 import type { ScoredListing } from "@/lib/scoring";
 
 interface ListingCardProps {
@@ -26,18 +27,19 @@ function proximityLabel(meters: number | null): string | null {
   return `${(meters / 1000).toFixed(1)}km`;
 }
 
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const hours = Math.floor(diff / 3600000);
-  if (hours < 1) return "Just now";
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days === 1) return "Yesterday";
-  return `${days}d ago`;
-}
-
 export function ListingCard({ listing, showScore }: ListingCardProps) {
   const imageUrl = listing.images?.[0] ?? "/placeholder-home.jpg";
+  const { t } = useI18n();
+
+  function timeAgo(dateStr: string): string {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const hours = Math.floor(diff / 3600000);
+    if (hours < 1) return t("card.just_now");
+    if (hours < 24) return `${hours}${t("card.hours_ago")}`;
+    const days = Math.floor(hours / 24);
+    if (days === 1) return t("card.yesterday");
+    return `${days}${t("card.days_ago")}`;
+  }
 
   return (
     <Link href={`/listing/${listing.id}`}>
@@ -58,7 +60,7 @@ export function ListingCard({ listing, showScore }: ListingCardProps) {
                   : "bg-dom-secondary text-white"
               )}
             >
-              {listing.deal_type === "rent" ? "Rent" : "Sale"}
+              {listing.deal_type === "rent" ? t("card.rent") : t("card.sale")}
             </Badge>
             <Badge variant="secondary" className="bg-white/90 text-[10px] font-nunito font-500 text-dom-fg backdrop-blur-sm rounded-full">
               {listing.source}
@@ -80,14 +82,18 @@ export function ListingCard({ listing, showScore }: ListingCardProps) {
           </p>
           <div className="flex flex-wrap gap-2 font-nunito text-xs text-dom-muted-fg">
             {listing.area_m2 && <span>{listing.area_m2} m²</span>}
-            {listing.rooms && <span>· {listing.rooms} {listing.rooms === 1 ? "room" : "rooms"}</span>}
+            {listing.rooms && (
+              <span>
+                · {listing.rooms} {listing.rooms === 1 ? t("card.room") : t("card.rooms")}
+              </span>
+            )}
             {listing.price_per_m2 && <span>· €{listing.price_per_m2}/m²</span>}
           </div>
 
           {showScore && (
             <div className="space-y-2 pt-2 border-t border-dom-border/50">
               <div className="flex items-center justify-between">
-                <span className="font-nunito text-xs font-600 text-dom-fg">Dom Score</span>
+                <span className="font-nunito text-xs font-600 text-dom-fg">{t("card.score")}</span>
                 <span className="inline-flex items-center gap-1 font-fraunces font-700 text-sm">
                   <span className="text-dom-primary text-[10px]">◆</span>
                   <span className={cn(
@@ -111,13 +117,13 @@ export function ListingCard({ listing, showScore }: ListingCardProps) {
               </div>
               <div className="flex flex-wrap gap-x-3 gap-y-0.5 font-nunito text-[10px] text-dom-muted-fg">
                 {listing.nearest_transit_m != null && (
-                  <span>Transit {proximityLabel(listing.nearest_transit_m)}</span>
+                  <span>{t("card.transit")} {proximityLabel(listing.nearest_transit_m)}</span>
                 )}
                 {listing.nearest_kindergarten_m != null && (
-                  <span>Kindergarten {proximityLabel(listing.nearest_kindergarten_m)}</span>
+                  <span>{t("card.kindergarten_label")} {proximityLabel(listing.nearest_kindergarten_m)}</span>
                 )}
                 {listing.nearest_park_m != null && (
-                  <span>Park {proximityLabel(listing.nearest_park_m)}</span>
+                  <span>{t("card.park_label")} {proximityLabel(listing.nearest_park_m)}</span>
                 )}
               </div>
             </div>

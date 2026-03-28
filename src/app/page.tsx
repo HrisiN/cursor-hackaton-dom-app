@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import { Layers, Sparkles, MessageSquareText } from "lucide-react";
 import { DomNavbar } from "@/components/dom/Navbar";
 import { AiSearch } from "@/components/listings/ai-search";
+import { useI18n } from "@/lib/i18n";
 import type { ListingFilters } from "@/types/listing";
 
 export default function HomePage() {
   const router = useRouter();
+  const { t } = useI18n();
 
   function handleAiFilters(filters: ListingFilters) {
     const params = new URLSearchParams();
@@ -49,18 +51,17 @@ export default function HomePage() {
               <span className="inline-flex items-center gap-2 rounded-full border border-dom-primary/25 bg-dom-primary-light px-4 py-1.5">
                 <span className="h-1.5 w-1.5 rounded-full bg-dom-primary" />
                 <span className="font-nunito font-600 text-xs uppercase tracking-wide text-dom-primary">
-                  Zagreb nekretnine
+                  {t("home.eyebrow")}
                 </span>
               </span>
             </div>
 
             <h1 className="font-fraunces font-800 text-4xl sm:text-5xl leading-tight tracking-tight text-dom-fg">
-              Pronađi dom koji te{" "}
-              <span className="text-dom-primary">čeka.</span>
+              {t("home.heading")}{" "}
+              <span className="text-dom-primary">{t("home.heading_accent")}</span>
             </h1>
             <p className="font-nunito font-400 text-sm text-dom-muted-fg max-w-lg mx-auto">
-              All offers from multiple agencies in one place, matched to your lifestyle.
-              Search by neighborhood, budget, proximity, or just describe what you want.
+              {t("home.subtitle")}
             </p>
 
             <div className="max-w-2xl mx-auto pt-2">
@@ -72,13 +73,13 @@ export default function HomePage() {
                 href="/search?deal_type=rent"
                 className="rounded-full bg-dom-primary px-8 py-3 font-nunito font-600 text-sm text-dom-primary-fg shadow-moss transition-all duration-300 hover:scale-105 active:scale-95"
               >
-                Browse rentals
+                {t("home.browse_rent")}
               </Link>
               <Link
                 href="/search?deal_type=sale"
                 className="rounded-full border border-dom-border bg-dom-card px-8 py-3 font-nunito font-600 text-sm text-dom-fg transition-all duration-300 hover:border-dom-primary/40 hover:shadow-moss"
               >
-                Browse for sale
+                {t("home.browse_sale")}
               </Link>
             </div>
           </div>
@@ -88,35 +89,29 @@ export default function HomePage() {
         <section className="w-full py-16">
           <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
             <h2 className="font-fraunces font-700 text-2xl text-center mb-10 text-dom-fg">
-              Why Dom?
+              {t("home.why_title")}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <div className="text-center space-y-3">
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-dom-primary-light border border-dom-primary/20">
                   <Layers className="h-6 w-6 text-dom-primary" />
                 </div>
-                <h3 className="font-fraunces font-700 text-sm">All offers, one place</h3>
-                <p className="font-nunito text-sm text-dom-muted-fg">
-                  We aggregate listings from Njuškalo, Index, Century 21, RE/MAX, Crozilla and more — updated daily.
-                </p>
+                <h3 className="font-fraunces font-700 text-sm">{t("home.feat1_title")}</h3>
+                <p className="font-nunito text-sm text-dom-muted-fg">{t("home.feat1_desc")}</p>
               </div>
               <div className="text-center space-y-3">
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-dom-primary-light border border-dom-primary/20">
                   <Sparkles className="h-6 w-6 text-dom-primary" />
                 </div>
-                <h3 className="font-fraunces font-700 text-sm">Lifestyle Match Score</h3>
-                <p className="font-nunito text-sm text-dom-muted-fg">
-                  Tell us what matters — transit, parks, schools, price — and every listing gets a personalized score.
-                </p>
+                <h3 className="font-fraunces font-700 text-sm">{t("home.feat2_title")}</h3>
+                <p className="font-nunito text-sm text-dom-muted-fg">{t("home.feat2_desc")}</p>
               </div>
               <div className="text-center space-y-3">
                 <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-dom-primary-light border border-dom-primary/20">
                   <MessageSquareText className="h-6 w-6 text-dom-primary" />
                 </div>
-                <h3 className="font-fraunces font-700 text-sm">Just describe it</h3>
-                <p className="font-nunito text-sm text-dom-muted-fg">
-                  Use natural language: &quot;Two bedrooms near Maksimir, under 700 euros, close to a tram.&quot; AI does the rest.
-                </p>
+                <h3 className="font-fraunces font-700 text-sm">{t("home.feat3_title")}</h3>
+                <p className="font-nunito text-sm text-dom-muted-fg">{t("home.feat3_desc")}</p>
               </div>
             </div>
           </div>

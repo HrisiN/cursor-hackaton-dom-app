@@ -3,9 +3,11 @@
 import { useMemo } from "react";
 import { Slider } from "@/components/ui/slider";
 import { TramFront, GraduationCap, Cross, TreePine, Coins, Sparkles } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 import type { LifestylePriorities } from "@/lib/scoring";
 import type { LucideIcon } from "lucide-react";
 import type { Listing } from "@/types/listing";
+import type { TranslationKey } from "@/lib/i18n";
 
 interface LifestylePanelProps {
   priorities: LifestylePriorities;
@@ -16,12 +18,12 @@ interface LifestylePanelProps {
   layout?: "horizontal" | "vertical";
 }
 
-const FACTORS: { key: keyof LifestylePriorities; label: string; Icon: LucideIcon }[] = [
-  { key: "transit", label: "Public transport", Icon: TramFront },
-  { key: "kindergarten", label: "Kindergartens & schools", Icon: GraduationCap },
-  { key: "hospital", label: "Hospital nearby", Icon: Cross },
-  { key: "park", label: "Parks & green space", Icon: TreePine },
-  { key: "price", label: "Best price per m²", Icon: Coins },
+const FACTORS: { key: keyof LifestylePriorities; labelKey: TranslationKey; Icon: LucideIcon }[] = [
+  { key: "transit", labelKey: "lifestyle.transit", Icon: TramFront },
+  { key: "kindergarten", labelKey: "lifestyle.kindergarten", Icon: GraduationCap },
+  { key: "hospital", labelKey: "lifestyle.hospital", Icon: Cross },
+  { key: "park", labelKey: "lifestyle.park", Icon: TreePine },
+  { key: "price", labelKey: "lifestyle.price", Icon: Coins },
 ];
 
 function computeAverageScore(listings: Listing[], priorities: LifestylePriorities): number {
@@ -70,6 +72,8 @@ function computeAverageScore(listings: Listing[], priorities: LifestylePrioritie
 }
 
 export function LifestylePanel({ priorities, onChange, listings, enabled, onEnable, layout = "vertical" }: LifestylePanelProps) {
+  const { t } = useI18n();
+
   const avgScore = useMemo(
     () => computeAverageScore(listings, priorities),
     [listings, priorities]
@@ -89,15 +93,15 @@ export function LifestylePanel({ priorities, onChange, listings, enabled, onEnab
         <div className="flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-dom-muted-fg group-hover:text-dom-primary transition-colors" />
           <h3 className="font-fraunces font-700 text-sm text-dom-muted-fg group-hover:text-dom-fg transition-colors">
-            Dom Lifestyle Score
+            {t("lifestyle.title")}
           </h3>
         </div>
         <p className="font-nunito text-xs text-dom-muted-fg">
-          Enable to rank listings by what matters to you — transport, schools, parks, hospitals & price.
+          {t("lifestyle.enable_desc")}
         </p>
         <span className="inline-flex items-center gap-1 rounded-full bg-dom-primary/10 px-3 py-1 font-nunito text-[11px] font-600 text-dom-primary">
           <Sparkles className="h-3 w-3" />
-          Click to activate
+          {t("lifestyle.activate")}
         </span>
       </button>
     );
@@ -107,25 +111,24 @@ export function LifestylePanel({ priorities, onChange, listings, enabled, onEnab
     return (
       <div className="rounded-2xl border border-dom-primary/30 bg-dom-card p-5 shadow-moss ring-2 ring-dom-primary/10">
         <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 items-start">
-          {/* Left: header + sliders */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-dom-primary" />
-              <h3 className="font-fraunces font-700 text-sm text-dom-fg">Dom Lifestyle Score</h3>
+              <h3 className="font-fraunces font-700 text-sm text-dom-fg">{t("lifestyle.title")}</h3>
               <span className="rounded-full bg-dom-primary/15 px-2 py-0.5 font-nunito text-[10px] font-600 text-dom-primary uppercase tracking-wider">
-                Active
+                {t("lifestyle.active")}
               </span>
             </div>
             <p className="font-nunito text-xs text-dom-muted-fg">
-              Move the sliders to prioritize what matters — listings re-rank in real time.
+              {t("lifestyle.hint_move")}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
-              {FACTORS.map(({ key, label, Icon }) => (
+              {FACTORS.map(({ key, labelKey, Icon }) => (
                 <div key={key} className="space-y-1">
                   <div className="flex items-center justify-between font-nunito text-xs">
                     <span className="flex items-center gap-1.5 text-dom-fg">
                       <Icon className="h-3.5 w-3.5 text-dom-primary" />
-                      {label}
+                      {t(labelKey)}
                     </span>
                     <span className="font-600 text-dom-muted-fg tabular-nums">{priorities[key]}/7</span>
                   </div>
@@ -144,30 +147,19 @@ export function LifestylePanel({ priorities, onChange, listings, enabled, onEnab
             </div>
           </div>
 
-          {/* Divider */}
           <div className="hidden md:block w-px bg-dom-border/50 self-stretch" />
 
-          {/* Right: score display */}
           <div className="flex flex-col items-center justify-center gap-3 py-2">
             <span className="font-nunito text-xs font-600 text-dom-muted-fg uppercase tracking-wider">
-              Average match
+              {t("lifestyle.avg_match")}
             </span>
             <div className="relative flex items-center justify-center">
               <svg className="h-28 w-28" viewBox="0 0 120 120">
+                <circle cx="60" cy="60" r="52" fill="none" stroke="currentColor" className="text-dom-border/30" strokeWidth="8" />
                 <circle
-                  cx="60" cy="60" r="52"
-                  fill="none"
-                  stroke="currentColor"
-                  className="text-dom-border/30"
-                  strokeWidth="8"
-                />
-                <circle
-                  cx="60" cy="60" r="52"
-                  fill="none"
-                  stroke="currentColor"
+                  cx="60" cy="60" r="52" fill="none" stroke="currentColor"
                   className={avgScore >= 75 ? "text-dom-primary" : avgScore >= 50 ? "text-dom-secondary" : "text-red-400"}
-                  strokeWidth="8"
-                  strokeLinecap="round"
+                  strokeWidth="8" strokeLinecap="round"
                   strokeDasharray={`${(avgScore / 100) * 327} 327`}
                   transform="rotate(-90 60 60)"
                   style={{ transition: "stroke-dasharray 0.5s ease-out" }}
@@ -179,11 +171,7 @@ export function LifestylePanel({ priorities, onChange, listings, enabled, onEnab
               </div>
             </div>
             <p className="font-nunito text-[11px] text-dom-muted-fg text-center max-w-[180px]">
-              {avgScore >= 75
-                ? "Great match! These listings fit your lifestyle well."
-                : avgScore >= 50
-                  ? "Decent match. Adjust sliders to improve."
-                  : "Low match. Try different priorities."}
+              {avgScore >= 75 ? t("lifestyle.great") : avgScore >= 50 ? t("lifestyle.decent") : t("lifestyle.low")}
             </p>
           </div>
         </div>
@@ -197,19 +185,18 @@ export function LifestylePanel({ priorities, onChange, listings, enabled, onEnab
         <div>
           <div className="flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-dom-primary" />
-            <h3 className="font-fraunces font-700 text-sm text-dom-fg">Dom Lifestyle Score</h3>
+            <h3 className="font-fraunces font-700 text-sm text-dom-fg">{t("lifestyle.title")}</h3>
           </div>
-          <p className="font-nunito text-xs text-dom-muted-fg mt-0.5">Adjust what matters most to you</p>
+          <p className="font-nunito text-xs text-dom-muted-fg mt-0.5">{t("lifestyle.subtitle")}</p>
         </div>
         <span className="rounded-full bg-dom-primary/15 px-2 py-0.5 font-nunito text-[10px] font-600 text-dom-primary uppercase tracking-wider">
-          Active
+          {t("lifestyle.active")}
         </span>
       </div>
 
-      {/* Live score display */}
       <div className="rounded-xl bg-dom-muted/60 p-3 space-y-2">
         <div className="flex items-center justify-between">
-          <span className="font-nunito text-xs font-600 text-dom-muted-fg">Average match</span>
+          <span className="font-nunito text-xs font-600 text-dom-muted-fg">{t("lifestyle.avg_match")}</span>
           <span className="inline-flex items-center gap-1">
             <span className="text-dom-primary text-[10px]">◆</span>
             <span className={`font-fraunces font-800 text-xl ${scoreColor}`}>{avgScore}</span>
@@ -217,21 +204,17 @@ export function LifestylePanel({ priorities, onChange, listings, enabled, onEnab
           </span>
         </div>
         <div className="h-2 w-full rounded-full bg-dom-border/40 overflow-hidden">
-          <div
-            className={`h-full rounded-full transition-all duration-500 ease-out ${barColor}`}
-            style={{ width: `${avgScore}%` }}
-          />
+          <div className={`h-full rounded-full transition-all duration-500 ease-out ${barColor}`} style={{ width: `${avgScore}%` }} />
         </div>
       </div>
 
-      {/* Priority sliders */}
       <div className="space-y-3">
-        {FACTORS.map(({ key, label, Icon }) => (
+        {FACTORS.map(({ key, labelKey, Icon }) => (
           <div key={key} className="space-y-1">
             <div className="flex items-center justify-between font-nunito text-xs">
               <span className="flex items-center gap-1.5 text-dom-fg">
                 <Icon className="h-3.5 w-3.5 text-dom-primary" />
-                {label}
+                {t(labelKey)}
               </span>
               <span className="font-600 text-dom-muted-fg tabular-nums">{priorities[key]}/7</span>
             </div>

@@ -11,6 +11,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import { TrendingUp, TrendingDown, BarChart3 } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 /**
  * Quarterly avg price/m² for Zagreb residential property.
@@ -77,6 +78,7 @@ function ChartTooltip({ active, payload, label }: any) {
 
 export function MarketInsight() {
   const [tab, setTab] = useState<Tab>("sale");
+  const { t } = useI18n();
 
   const data = tab === "sale" ? SALE_HISTORY : RENT_HISTORY;
   const currentPrice = data[data.length - 1].price;
@@ -86,15 +88,13 @@ export function MarketInsight() {
 
   return (
     <div className="rounded-2xl border border-dom-border/60 bg-dom-card p-4 shadow-moss space-y-3">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <BarChart3 className="h-4 w-4 text-dom-primary" />
-          <h3 className="font-fraunces font-700 text-sm text-dom-fg">Zagreb Market Pulse</h3>
+          <h3 className="font-fraunces font-700 text-sm text-dom-fg">{t("market.title")}</h3>
         </div>
       </div>
 
-      {/* Tab toggle */}
       <div className="flex rounded-full border border-dom-border bg-dom-muted/50 p-0.5">
         <button
           onClick={() => setTab("sale")}
@@ -104,7 +104,7 @@ export function MarketInsight() {
               : "text-dom-muted-fg hover:text-dom-fg"
           }`}
         >
-          Sale prices
+          {t("market.sale_prices")}
         </button>
         <button
           onClick={() => setTab("rent")}
@@ -114,15 +114,14 @@ export function MarketInsight() {
               : "text-dom-muted-fg hover:text-dom-fg"
           }`}
         >
-          Rent prices
+          {t("market.rent_prices")}
         </button>
       </div>
 
-      {/* Current stat */}
       <div className="flex items-end justify-between">
         <div className="space-y-0.5">
           <p className="font-nunito text-[10px] text-dom-muted-fg uppercase tracking-wider">
-            Avg. {tab === "sale" ? "sale" : "rent"} price per m²
+            {tab === "sale" ? t("market.avg_sale") : t("market.avg_rent")}
           </p>
           <p className="font-fraunces font-700 text-2xl text-dom-fg">
             €{tab === "sale" ? currentPrice.toLocaleString() : currentPrice.toFixed(1)}
@@ -204,10 +203,9 @@ export function MarketInsight() {
         </ResponsiveContainer>
       </div>
 
-      {/* Neighborhood breakdown */}
       <div className="space-y-1.5">
         <p className="font-nunito text-[10px] text-dom-muted-fg uppercase tracking-wider">
-          By neighborhood (€/m² {tab})
+          {t("market.by_neighborhood")} (€/m² {tab})
         </p>
         <div className="grid grid-cols-2 gap-x-3 gap-y-1">
           {(tab === "sale"
@@ -244,20 +242,15 @@ export function MarketInsight() {
         </div>
       </div>
 
-      {/* Tip */}
       <div className="rounded-xl bg-dom-secondary/15 border border-dom-secondary/25 p-3">
         <p className="font-nunito text-xs text-dom-secondary">
-          <span className="font-700">Tip:</span>{" "}
-          {tab === "sale"
-            ? "Zagreb prices typically dip in Q1 (Jan–Mar) and peak in Q3 (Jul–Sep). Current quarter: Q1 — historically a buyer's window."
-            : "Rents peak in Sep–Oct (university season) and soften Dec–Feb. Current period favors tenants."}
+          <span className="font-700">{t("market.tip")}</span>{" "}
+          {tab === "sale" ? t("market.tip_sale") : t("market.tip_rent")}
         </p>
       </div>
 
-      {/* Source */}
       <p className="font-nunito text-[9px] text-dom-muted-fg">
-        Sources: HNB Residential Property Price Index, DZS Statistical Reports, Njuškalo/Index market data.
-        Values are city-wide averages and may vary by micro-location.
+        {t("market.source")}
       </p>
     </div>
   );

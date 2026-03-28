@@ -2,10 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
+import { useI18n, LanguageToggle } from "@/lib/i18n";
 
 export function Navbar() {
   const pathname = usePathname();
+  const { t } = useI18n();
 
   if (pathname === "/") return null;
 
@@ -23,26 +24,15 @@ export function Navbar() {
             <span className="font-fraunces font-800 text-xl tracking-tight">Dom</span>
           </Link>
 
-          <nav className="flex items-center gap-1">
+          <div className="flex items-center gap-3">
+            <LanguageToggle />
             <Link
-              href="/search?deal_type=rent"
-              className={cn(
-                "rounded-full px-4 py-2 text-sm font-nunito font-500 transition-all duration-300",
-                pathname === "/search" ? "bg-dom-primary-light text-dom-primary" : "text-dom-muted-fg hover:text-dom-fg hover:bg-dom-muted"
-              )}
+              href="/search"
+              className="rounded-full bg-dom-primary px-5 py-2 text-sm font-nunito font-600 text-dom-primary-fg shadow-moss transition-all duration-300 hover:scale-105 active:scale-95"
             >
-              Rent
+              {t("nav.search")}
             </Link>
-            <Link
-              href="/search?deal_type=sale"
-              className={cn(
-                "rounded-full px-4 py-2 text-sm font-nunito font-500 transition-all duration-300",
-                pathname === "/search" ? "bg-dom-primary-light text-dom-primary" : "text-dom-muted-fg hover:text-dom-fg hover:bg-dom-muted"
-              )}
-            >
-              Buy
-            </Link>
-          </nav>
+          </div>
         </div>
       </div>
     </header>

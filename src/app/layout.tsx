@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Fraunces, Nunito } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/layout/navbar";
+import { Footer } from "@/components/layout/footer";
+import { Providers } from "@/components/layout/providers";
 
 const fraunces = Fraunces({
   variable: "--font-fraunces",
@@ -29,16 +31,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${nunito.variable} h-full antialiased`}>
+    <html lang="hr" className={`${fraunces.variable} ${nunito.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col font-nunito bg-dom-bg text-dom-fg">
-        <Navbar />
-        <main className="flex-1">{children}</main>
-        <footer className="border-t border-dom-border bg-dom-muted/40 py-6">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-dom-muted-fg">
-            <p className="font-fraunces font-700">Dom — Zagreb Real Estate</p>
-            <p>Data sourced from multiple agencies, updated daily</p>
-          </div>
-        </footer>
+        <Providers>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );

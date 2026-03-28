@@ -1,6 +1,10 @@
 "use client";
 
+import { useI18n, LanguageToggle } from "@/lib/i18n";
+
 export function DomNavbar() {
+  const { t } = useI18n();
+
   return (
     <header className="sticky top-4 z-50 mx-4">
       <nav className="mx-auto max-w-5xl flex items-center justify-between rounded-full border border-dom-border/50 bg-white/70 px-4 py-2.5 shadow-moss backdrop-blur-md">
@@ -16,13 +20,14 @@ export function DomNavbar() {
 
         <div className="flex items-center gap-3">
           <span className="hidden sm:inline-flex items-center rounded-full bg-dom-muted px-3.5 py-1.5 text-xs font-nunito font-500 text-dom-muted-fg">
-            Zagreb, HR
+            {t("nav.zagreb")}
           </span>
+          <LanguageToggle />
           <a
             href="/search"
             className="rounded-full bg-dom-primary px-5 py-2 text-sm font-nunito font-600 text-dom-primary-fg shadow-moss transition-all duration-300 hover:scale-105 active:scale-95"
           >
-            Prijava
+            {t("nav.login")}
           </a>
         </div>
       </nav>
