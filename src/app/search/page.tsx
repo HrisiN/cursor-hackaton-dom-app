@@ -52,7 +52,6 @@ export default function SearchPage() {
   const [listings, setListings] = useState<Listing[]>([]);
   const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([]);
   const [loading, setLoading] = useState(true);
-  const [lifestyleEnabled, setLifestyleEnabled] = useState(false);
   const [priorities, setPriorities] = useState<LifestylePriorities>(DEFAULT_PRIORITIES);
   const [showMap, setShowMap] = useState(false);
 
@@ -73,11 +72,8 @@ export default function SearchPage() {
 
   const scoredListings: ScoredListing[] = useMemo(() => {
     const scored = scoreListings(listings, priorities);
-    if (lifestyleEnabled) {
-      return scored.sort((a, b) => b.domScore - a.domScore);
-    }
-    return scored;
-  }, [listings, priorities, lifestyleEnabled]);
+    return scored.sort((a, b) => b.domScore - a.domScore);
+  }, [listings, priorities]);
 
   function handleAiFilters(aiFilters: ListingFilters) {
     setFilters((prev) => ({ ...prev, ...aiFilters }));
@@ -115,11 +111,9 @@ export default function SearchPage() {
                 {loading ? "Searching..." : `${scoredListings.length} listings found`}
               </p>
               <div className="flex items-center gap-3">
-                {lifestyleEnabled && (
-                  <p className="font-nunito text-xs text-dom-primary font-600">
-                    Sorted by Dom Score
-                  </p>
-                )}
+                <p className="font-nunito text-xs text-dom-primary font-600">
+                  Sorted by Dom Score
+                </p>
                 <div className="flex rounded-full border border-dom-border bg-dom-muted/50 p-0.5">
                   <button
                     onClick={() => setShowMap(false)}
@@ -174,7 +168,7 @@ export default function SearchPage() {
                   <ListingCard
                     key={listing.id}
                     listing={listing}
-                    showScore={lifestyleEnabled}
+                    showScore={true}
                   />
                 ))}
               </div>
@@ -186,8 +180,7 @@ export default function SearchPage() {
             <LifestylePanel
               priorities={priorities}
               onChange={setPriorities}
-              enabled={lifestyleEnabled}
-              onToggle={setLifestyleEnabled}
+              listings={listings}
             />
             <MarketInsight />
           </aside>

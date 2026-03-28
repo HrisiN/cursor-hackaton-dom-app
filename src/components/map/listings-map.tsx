@@ -1,11 +1,11 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import type { Listing } from "@/types/listing";
 
 interface ListingsMapProps {
   listings: Listing[];
-  onMarkerClick?: (listing: Listing) => void;
 }
 
 function formatPrice(price: number, dealType: "rent" | "sale"): string {
@@ -15,16 +15,17 @@ function formatPrice(price: number, dealType: "rent" | "sale"): string {
   return `€${price}`;
 }
 
-export function ListingsMap({ listings, onMarkerClick }: ListingsMapProps) {
+export function ListingsMap({ listings }: ListingsMapProps) {
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
   const geoListings = listings.filter((l) => l.latitude && l.longitude);
 
-  if (!apiKey || geoListings.length === 0) {
+  if (geoListings.length === 0) {
     return (
-      <div className="rounded-xl border bg-muted/50 h-full min-h-[400px] flex items-center justify-center text-sm text-muted-foreground">
-        {!apiKey ? "Google Maps API key not configured" : "No listings with coordinates"}
+      <div className="rounded-2xl border border-dom-border/60 bg-dom-muted/50 h-full min-h-[400px] flex items-center justify-center font-nunito text-sm text-dom-muted-fg">
+        No listings with coordinates to display
       </div>
     );
   }
@@ -32,97 +33,120 @@ export function ListingsMap({ listings, onMarkerClick }: ListingsMapProps) {
   const centerLat = geoListings.reduce((s, l) => s + l.latitude!, 0) / geoListings.length;
   const centerLng = geoListings.reduce((s, l) => s + l.longitude!, 0) / geoListings.length;
 
-  const markersParam = geoListings
-    .slice(0, 15)
-    .map((l) => `${l.latitude},${l.longitude}`)
-    .join("|");
-
   const selected = geoListings.find((l) => l.id === selectedId);
 
+  const mapSrc = apiKey
+    ? `https://www.google.com/maps/embed/v1/view?key=${apiKey}&center=${centerLat},${centerLng}&zoom=13&maptype=roadmap`
+    : null;
+
   return (
-    <div className="rounded-xl border bg-white overflow-hidden shadow-sm h-full min-h-[400px] flex flex-col">
-      <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/30">
-        <span className="text-xs font-medium text-muted-foreground">
+    <div
+      ref={containerRef}
+      className="rounded-2xl border border-dom-border/60 bg-dom-card overflow-hidden shadow-moss h-full min-h-[400px] flex flex-col"
+    >
+      <div className="flex items-center justify-between px-4 py-2.5 border-b border-dom-border/40 bg-dom-muted/30">
+        <span className="font-nunito text-xs font-600 text-dom-muted-fg">
           {geoListings.length} listings on map
         </span>
+        {selectedId && (
+          <button
+            onClick={() => setSelectedId(null)}
+            className="font-nunito text-[10px] text-dom-muted-fg hover:text-dom-primary transition-all duration-300"
+          >
+            Clear selection
+          </button>
+        )}
       </div>
-      <div className="relative flex-1">
-        <iframe
-          width="100%"
-          height="100%"
-          style={{ border: 0, minHeight: 350 }}
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          src={`https://www.google.com/maps/embed/v1/view?key=${apiKey}&center=${centerLat},${centerLng}&zoom=13`}
-        />
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="relative w-full h-full">
-            {geoListings.slice(0, 20).map((listing) => {
-              const isSelected = listing.id === selectedId;
-              return (
-                <button
-                  key={listing.id}
-                  className={`pointer-events-auto absolute transform -translate-x-1/2 -translate-y-full transition-all z-10 ${
-                    isSelected ? "z-20 scale-110" : "hover:scale-105 hover:z-20"
-                  }`}
-                  style={{
-                    left: `${((listing.longitude! - (centerLng - 0.06)) / 0.12) * 100}%`,
-                    top: `${((centerLat + 0.035 - listing.latitude!) / 0.07) * 100}%`,
-                  }}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setSelectedId(isSelected ? null : listing.id);
-                    onMarkerClick?.(listing);
-                  }}
-                >
-                  <div
-                    className={`rounded-full px-2 py-1 text-[11px] font-bold shadow-md whitespace-nowrap ${
-                      isSelected
-                        ? "bg-emerald-600 text-white"
-                        : listing.deal_type === "rent"
-                        ? "bg-blue-600 text-white"
-                        : "bg-amber-500 text-white"
-                    }`}
-                  >
-                    {formatPrice(listing.price, listing.deal_type)}
-                  </div>
-                  <div
-                    className={`mx-auto w-0 h-0 border-l-[5px] border-r-[5px] border-t-[6px] border-l-transparent border-r-transparent ${
-                      isSelected
-                        ? "border-t-emerald-600"
-                        : listing.deal_type === "rent"
-                        ? "border-t-blue-600"
-                        : "border-t-amber-500"
-                    }`}
-                  />
-                </button>
-              );
-            })}
+
+      <div className="relative flex-1 min-h-[350px]">
+        {mapSrc ? (
+          <iframe
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            allowFullScreen
+            src={mapSrc}
+            title="Zagreb listings map"
+          />
+        ) : (
+          <div className="h-full bg-[#EAE5DA] flex items-center justify-center">
+            <span className="font-nunito text-sm text-dom-muted-fg">Map requires Google Maps API key</span>
           </div>
+        )}
+
+        {/* Price pin overlays */}
+        <div className="absolute inset-0 z-10" style={{ pointerEvents: "none" }}>
+          {geoListings.slice(0, 20).map((listing) => {
+            const isSelected = listing.id === selectedId;
+            const xPct = ((listing.longitude! - (centerLng - 0.06)) / 0.12) * 100;
+            const yPct = ((centerLat + 0.035 - listing.latitude!) / 0.07) * 100;
+
+            if (xPct < 2 || xPct > 98 || yPct < 2 || yPct > 98) return null;
+
+            return (
+              <button
+                key={listing.id}
+                style={{
+                  pointerEvents: "auto",
+                  position: "absolute",
+                  left: `${xPct}%`,
+                  top: `${yPct}%`,
+                  transform: "translate(-50%, -100%)",
+                  zIndex: isSelected ? 30 : 10,
+                }}
+                className={`transition-all duration-250 ${isSelected ? "scale-110" : "hover:scale-110 hover:z-20"}`}
+                onClick={() => setSelectedId(isSelected ? null : listing.id)}
+              >
+                <div
+                  className={`rounded-full px-2.5 py-1 font-nunito text-[11px] font-bold whitespace-nowrap shadow-moss ${
+                    isSelected
+                      ? "bg-dom-fg text-white"
+                      : listing.deal_type === "rent"
+                      ? "bg-dom-primary text-white"
+                      : "bg-dom-secondary text-white"
+                  }`}
+                >
+                  {formatPrice(listing.price, listing.deal_type)}
+                </div>
+                <div
+                  className={`mx-auto w-0 h-0 border-l-[5px] border-r-[5px] border-t-[6px] border-l-transparent border-r-transparent ${
+                    isSelected
+                      ? "border-t-dom-fg"
+                      : listing.deal_type === "rent"
+                      ? "border-t-dom-primary"
+                      : "border-t-dom-secondary"
+                  }`}
+                />
+              </button>
+            );
+          })}
         </div>
       </div>
 
+      {/* Selected listing preview */}
       {selected && (
-        <div className="border-t p-3 bg-white">
+        <Link href={`/listing/${selected.id}`} className="block border-t border-dom-border/40 p-3 bg-dom-card hover:bg-dom-muted/30 transition-all duration-300">
           <div className="flex gap-3">
             {selected.images?.[0] && (
               <img
                 src={selected.images[0]}
                 alt={selected.title}
-                className="w-16 h-16 rounded-lg object-cover flex-shrink-0"
+                className="w-16 h-16 rounded-xl object-cover flex-shrink-0"
               />
             )}
             <div className="min-w-0">
-              <p className="text-sm font-semibold truncate">{selected.title}</p>
-              <p className="text-xs text-muted-foreground">{selected.neighborhood}</p>
-              <p className="text-sm font-bold text-emerald-600 mt-0.5">
+              <p className="font-fraunces font-700 text-sm truncate text-dom-fg">{selected.title}</p>
+              <p className="font-nunito text-xs text-dom-muted-fg">{selected.neighborhood}</p>
+              <p className="font-fraunces font-700 text-sm text-dom-primary mt-0.5">
                 €{selected.price.toLocaleString()}
                 {selected.deal_type === "rent" ? "/mo" : ""}
                 {selected.area_m2 ? ` · ${selected.area_m2}m²` : ""}
               </p>
             </div>
           </div>
-        </div>
+        </Link>
       )}
     </div>
   );
