@@ -13,6 +13,7 @@ interface LifestylePanelProps {
   listings: Listing[];
   enabled: boolean;
   onEnable: () => void;
+  layout?: "horizontal" | "vertical";
 }
 
 const FACTORS: { key: keyof LifestylePriorities; label: string; Icon: LucideIcon }[] = [
@@ -68,7 +69,7 @@ function computeAverageScore(listings: Listing[], priorities: LifestylePrioritie
   return Math.round(totalScore / listings.length);
 }
 
-export function LifestylePanel({ priorities, onChange, listings, enabled, onEnable }: LifestylePanelProps) {
+export function LifestylePanel({ priorities, onChange, listings, enabled, onEnable, layout = "vertical" }: LifestylePanelProps) {
   const avgScore = useMemo(
     () => computeAverageScore(listings, priorities),
     [listings, priorities]
@@ -99,6 +100,94 @@ export function LifestylePanel({ priorities, onChange, listings, enabled, onEnab
           Click to activate
         </span>
       </button>
+    );
+  }
+
+  if (layout === "horizontal") {
+    return (
+      <div className="rounded-2xl border border-dom-primary/30 bg-dom-card p-5 shadow-moss ring-2 ring-dom-primary/10">
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-6 items-start">
+          {/* Left: header + sliders */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-dom-primary" />
+              <h3 className="font-fraunces font-700 text-sm text-dom-fg">Dom Lifestyle Score</h3>
+              <span className="rounded-full bg-dom-primary/15 px-2 py-0.5 font-nunito text-[10px] font-600 text-dom-primary uppercase tracking-wider">
+                Active
+              </span>
+            </div>
+            <p className="font-nunito text-xs text-dom-muted-fg">
+              Move the sliders to prioritize what matters — listings re-rank in real time.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+              {FACTORS.map(({ key, label, Icon }) => (
+                <div key={key} className="space-y-1">
+                  <div className="flex items-center justify-between font-nunito text-xs">
+                    <span className="flex items-center gap-1.5 text-dom-fg">
+                      <Icon className="h-3.5 w-3.5 text-dom-primary" />
+                      {label}
+                    </span>
+                    <span className="font-600 text-dom-muted-fg tabular-nums">{priorities[key]}/7</span>
+                  </div>
+                  <Slider
+                    value={[priorities[key]]}
+                    min={0}
+                    max={7}
+                    step={1}
+                    onValueChange={(val) =>
+                      onChange({ ...priorities, [key]: Array.isArray(val) ? val[0] : val })
+                    }
+                    className="w-full"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="hidden md:block w-px bg-dom-border/50 self-stretch" />
+
+          {/* Right: score display */}
+          <div className="flex flex-col items-center justify-center gap-3 py-2">
+            <span className="font-nunito text-xs font-600 text-dom-muted-fg uppercase tracking-wider">
+              Average match
+            </span>
+            <div className="relative flex items-center justify-center">
+              <svg className="h-28 w-28" viewBox="0 0 120 120">
+                <circle
+                  cx="60" cy="60" r="52"
+                  fill="none"
+                  stroke="currentColor"
+                  className="text-dom-border/30"
+                  strokeWidth="8"
+                />
+                <circle
+                  cx="60" cy="60" r="52"
+                  fill="none"
+                  stroke="currentColor"
+                  className={avgScore >= 75 ? "text-dom-primary" : avgScore >= 50 ? "text-dom-secondary" : "text-red-400"}
+                  strokeWidth="8"
+                  strokeLinecap="round"
+                  strokeDasharray={`${(avgScore / 100) * 327} 327`}
+                  transform="rotate(-90 60 60)"
+                  style={{ transition: "stroke-dasharray 0.5s ease-out" }}
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className={`font-fraunces font-800 text-3xl ${scoreColor}`}>{avgScore}</span>
+                <span className="font-nunito text-[10px] text-dom-muted-fg">/100</span>
+              </div>
+            </div>
+            <p className="font-nunito text-[11px] text-dom-muted-fg text-center max-w-[180px]">
+              {avgScore >= 75
+                ? "Great match! These listings fit your lifestyle well."
+                : avgScore >= 50
+                  ? "Decent match. Adjust sliders to improve."
+                  : "Low match. Try different priorities."}
+            </p>
+          </div>
+        </div>
+      </div>
     );
   }
 

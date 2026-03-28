@@ -51,7 +51,13 @@ const MODE_META: {
 export default function SearchPage() {
   const searchParams = useSearchParams();
 
-  const [activeMode, setActiveMode] = useState<SearchMode>("filters");
+  const [activeMode, setActiveModeRaw] = useState<SearchMode>("filters");
+
+  const setActiveMode = useCallback((mode: SearchMode) => {
+    setActiveModeRaw(mode);
+    setFilters((prev) => ({ sort_by: "newest", deal_type: prev.deal_type }));
+    setPriorities(DEFAULT_PRIORITIES);
+  }, []);
 
   const [filters, setFilters] = useState<ListingFilters>(() => {
     const initial: ListingFilters = { sort_by: "newest" };
@@ -147,27 +153,63 @@ export default function SearchPage() {
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-6">
         {/* Search mode selector */}
         <div className="rounded-2xl border border-dom-border/60 bg-dom-card p-2 shadow-moss">
-          <div className="flex items-center gap-1.5">
-            <span className="font-nunito text-[10px] text-dom-muted-fg uppercase tracking-wider px-2 hidden sm:block">
-              Search with
-            </span>
-            {MODE_META.map(({ id, label, Icon }) => {
-              const isActive = activeMode === id;
-              return (
-                <button
-                  key={id}
-                  onClick={() => setActiveMode(id)}
-                  className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-nunito font-600 transition-all duration-300 ${
-                    isActive
-                      ? "bg-dom-fg text-dom-bg shadow-moss"
-                      : "text-dom-muted-fg hover:text-dom-fg hover:bg-dom-muted/50"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  {label}
-                </button>
-              );
-            })}
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5">
+              <span className="font-nunito text-[10px] text-dom-muted-fg uppercase tracking-wider px-2 hidden sm:block">
+                Search with
+              </span>
+              {MODE_META.map(({ id, label, Icon }) => {
+                const isActive = activeMode === id;
+                return (
+                  <button
+                    key={id}
+                    onClick={() => setActiveMode(id)}
+                    className={`flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-nunito font-600 transition-all duration-300 ${
+                      isActive
+                        ? "bg-dom-fg text-dom-bg shadow-moss"
+                        : "text-dom-muted-fg hover:text-dom-fg hover:bg-dom-muted/50"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Rent / Sale toggle */}
+            <div className="flex items-center gap-1 rounded-full border border-dom-border bg-dom-muted/40 p-0.5">
+              <button
+                onClick={() => setFilters((f) => ({ ...f, deal_type: undefined }))}
+                className={`rounded-full px-3 py-1.5 text-xs font-nunito font-600 transition-all duration-300 ${
+                  !filters.deal_type
+                    ? "bg-dom-card text-dom-fg shadow-moss"
+                    : "text-dom-muted-fg hover:text-dom-fg"
+                }`}
+              >
+                All
+              </button>
+              <button
+                onClick={() => setFilters((f) => ({ ...f, deal_type: "rent" }))}
+                className={`rounded-full px-3 py-1.5 text-xs font-nunito font-600 transition-all duration-300 ${
+                  filters.deal_type === "rent"
+                    ? "bg-dom-primary text-white shadow-moss"
+                    : "text-dom-muted-fg hover:text-dom-fg"
+                }`}
+              >
+                Rent
+              </button>
+              <button
+                onClick={() => setFilters((f) => ({ ...f, deal_type: "sale" }))}
+                className={`rounded-full px-3 py-1.5 text-xs font-nunito font-600 transition-all duration-300 ${
+                  filters.deal_type === "sale"
+                    ? "bg-dom-secondary text-white shadow-moss"
+                    : "text-dom-muted-fg hover:text-dom-fg"
+                }`}
+              >
+                Sale
+              </button>
+            </div>
           </div>
           <p className="font-nunito text-xs text-dom-muted-fg mt-1.5 px-2">
             {MODE_META.find((m) => m.id === activeMode)?.description}
@@ -177,51 +219,63 @@ export default function SearchPage() {
         {/* AI Search — visible in AI mode */}
         {activeMode === "ai" && <AiSearch onFiltersExtracted={handleAiFilters} />}
 
+        {/* Lifestyle Score panel — full width at top when active */}
+        {isLifestyleActive && (
+          <LifestylePanel
+            priorities={priorities}
+            onChange={setPriorities}
+            listings={listings}
+            enabled={true}
+            onEnable={() => {}}
+            layout="horizontal"
+          />
+        )}
+
+        {/* Filters — visible in filters mode */}
+        {activeMode === "filters" && (
+          <FilterBar
+            filters={filters}
+            neighborhoods={neighborhoods}
+            onChange={setFilters}
+          />
+        )}
+
+        {/* Active filters summary when NOT in filters mode but filters exist */}
+        {activeMode !== "filters" && Object.keys(filters).length > 1 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-nunito text-xs text-dom-muted-fg">Active filters:</span>
+            {filters.deal_type && (
+              <span className="rounded-full bg-dom-muted px-2.5 py-0.5 font-nunito text-[11px] font-600 text-dom-fg">
+                {filters.deal_type === "rent" ? "Rent" : "Sale"}
+              </span>
+            )}
+            {filters.neighborhood && (
+              <span className="rounded-full bg-dom-muted px-2.5 py-0.5 font-nunito text-[11px] font-600 text-dom-fg">
+                {filters.neighborhood}
+              </span>
+            )}
+            {filters.price_max && (
+              <span className="rounded-full bg-dom-muted px-2.5 py-0.5 font-nunito text-[11px] font-600 text-dom-fg">
+                Max €{filters.price_max.toLocaleString()}
+              </span>
+            )}
+            {filters.rooms_min && (
+              <span className="rounded-full bg-dom-muted px-2.5 py-0.5 font-nunito text-[11px] font-600 text-dom-fg">
+                {filters.rooms_min}+ rooms
+              </span>
+            )}
+            <button
+              onClick={() => setActiveModeRaw("filters")}
+              className="font-nunito text-[11px] font-600 text-dom-primary hover:underline"
+            >
+              Edit filters
+            </button>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
           {/* Main column */}
           <div className="space-y-6">
-            {/* Filters — visible in filters mode */}
-            {activeMode === "filters" && (
-              <FilterBar
-                filters={filters}
-                neighborhoods={neighborhoods}
-                onChange={setFilters}
-              />
-            )}
-
-            {/* Active filters summary when NOT in filters mode but filters exist */}
-            {activeMode !== "filters" && Object.keys(filters).length > 1 && (
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="font-nunito text-xs text-dom-muted-fg">Active filters:</span>
-                {filters.deal_type && (
-                  <span className="rounded-full bg-dom-muted px-2.5 py-0.5 font-nunito text-[11px] font-600 text-dom-fg">
-                    {filters.deal_type === "rent" ? "Rent" : "Sale"}
-                  </span>
-                )}
-                {filters.neighborhood && (
-                  <span className="rounded-full bg-dom-muted px-2.5 py-0.5 font-nunito text-[11px] font-600 text-dom-fg">
-                    {filters.neighborhood}
-                  </span>
-                )}
-                {filters.price_max && (
-                  <span className="rounded-full bg-dom-muted px-2.5 py-0.5 font-nunito text-[11px] font-600 text-dom-fg">
-                    Max €{filters.price_max.toLocaleString()}
-                  </span>
-                )}
-                {filters.rooms_min && (
-                  <span className="rounded-full bg-dom-muted px-2.5 py-0.5 font-nunito text-[11px] font-600 text-dom-fg">
-                    {filters.rooms_min}+ rooms
-                  </span>
-                )}
-                <button
-                  onClick={() => setActiveMode("filters")}
-                  className="font-nunito text-[11px] font-600 text-dom-primary hover:underline"
-                >
-                  Edit filters
-                </button>
-              </div>
-            )}
-
             {/* Results header */}
             <div className="flex items-center justify-between">
               <p className="font-nunito text-sm text-dom-muted-fg">
@@ -294,14 +348,17 @@ export default function SearchPage() {
 
           {/* Sidebar */}
           <aside className="space-y-4">
-            {/* Lifestyle panel — always in sidebar but highlighted when active */}
-            <LifestylePanel
-              priorities={priorities}
-              onChange={setPriorities}
-              listings={listings}
-              enabled={isLifestyleActive}
-              onEnable={() => setActiveMode("lifestyle")}
-            />
+            {/* Lifestyle panel teaser in sidebar when not active */}
+            {!isLifestyleActive && (
+              <LifestylePanel
+                priorities={priorities}
+                onChange={setPriorities}
+                listings={listings}
+                enabled={false}
+                onEnable={() => setActiveModeRaw("lifestyle")}
+                layout="vertical"
+              />
+            )}
             <MarketInsight />
           </aside>
         </div>
