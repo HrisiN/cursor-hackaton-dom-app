@@ -367,29 +367,29 @@ def _fetch_with_enrichment(
 
 
 def _widget_search_batch(
-    category: str,
+    api_category: str,
     limit: int,
     batch_delay: float,
     max_pages: int = 8,
     *,
-    module: str = "nekretnine",
-    extra_params: dict[str, Any] | None = None,
     browser_fallback: bool = False,
 ) -> list[dict[str, Any]]:
-    """Paginate widget-search, collecting Zagreb ads until we reach *limit*."""
+    """Paginate widget-search, collecting Zagreb ads until we reach *limit*.
+
+    The widget-search GET endpoint only recognises English category slugs
+    (``flats-for-sale``, ``flats-for-rent``) as individual query params.
+    Location filtering (``includeCountyIds``) is ignored on this endpoint,
+    so we apply ``_is_zagreb()`` client-side.
+    """
     collected: list[dict[str, Any]] = []
     for page_num in range(1, max_pages + 1):
         time.sleep(batch_delay)
         params: dict[str, Any] = {
             "page": page_num,
             "itemPerPage": 48,
-            "category": category,
-            "module": module,
+            "category": api_category,
             "sortOption": 4,
-            "includeCountyIds": ZAGREB_COUNTY_ID,
         }
-        if extra_params:
-            params.update(extra_params)
 
         payload = _try_fetch_page("/aditem/widget-search", params, browser_fallback)
         ads = _extract_ads(payload)
@@ -429,15 +429,6 @@ def fetch_listings() -> list[dict]:
     delay = _env_float("INDEX_ENRICHMENT_DELAY", 1.5)
     skip_detail = _env_bool("INDEX_SKIP_DETAIL")
     browser_fallback = _env_bool("INDEX_BROWSER_FALLBACK")
-    module = os.environ.get("INDEX_MODULE_ID", "").strip() or "nekretnine"
-
-    extra_params: dict[str, Any] | None = None
-    raw_extra = os.environ.get("INDEX_SEARCH_QUERY_EXTRA", "").strip()
-    if raw_extra:
-        try:
-            extra_params = json.loads(raw_extra)
-        except json.JSONDecodeError:
-            print(f"[index-hr] Bad INDEX_SEARCH_QUERY_EXTRA JSON, ignoring", file=sys.stderr)
 
     try:
         S.get(BASE + "/oglasi/", timeout=25)
@@ -457,20 +448,18 @@ def fetch_listings() -> list[dict]:
     max_pages = int(os.environ.get("INDEX_MAX_PAGES", "8"))
 
     phases = (
-        ("sale", CATEGORY_SALE, max_sale),
-        ("rent", CATEGORY_RENT, max_rent),
+        ("sale", API_CATEGORY_SALE, max_sale),
+        ("rent", API_CATEGORY_RENT, max_rent),
     )
-    for idx, (deal, category, limit) in enumerate(phases):
+    for idx, (deal, api_cat, limit) in enumerate(phases):
         if idx > 0:
             time.sleep(batch_delay)
         try:
             ads = _widget_search_batch(
-                category,
+                api_cat,
                 limit,
                 batch_delay,
                 max_pages,
-                module=module,
-                extra_params=extra_params,
                 browser_fallback=browser_fallback,
             )
             if not ads:

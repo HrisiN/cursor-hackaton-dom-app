@@ -27,11 +27,11 @@ def sql_val(v):
 def main():
     u, k = require_supabase()
     sb = create_client(u, k)
-    r = sb.table("listings").select(",".join(COLS)).eq("source", "index-hr").execute()
+    r = sb.table("listings").select(",".join(COLS)).execute()
     rows = r.data or []
 
     lines = [
-        "-- Auto-generated from Index Oglasi scrape (Zagreb)",
+        "-- Auto-generated from Supabase listings export",
         "-- Run after schema.sql in Supabase SQL Editor",
         "",
     ]
@@ -50,10 +50,15 @@ def main():
         lines.append(stmt)
 
     lines.append("")
-    out = "supabase/scraped-listings.sql"
-    with open("../" + out, "w", encoding="utf-8") as f:
+    sql_out = "../supabase/scraped-listings.sql"
+    with open(sql_out, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
-    print(f"Exported {len(rows)} listings to {out}")
+
+    json_out = "../supabase/scraped-listings.json"
+    with open(json_out, "w", encoding="utf-8") as f:
+        json.dump(rows, f, ensure_ascii=False, indent=2)
+
+    print(f"Exported {len(rows)} listings to scraped-listings.sql and scraped-listings.json")
 
 
 if __name__ == "__main__":
