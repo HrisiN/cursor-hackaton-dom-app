@@ -21,7 +21,7 @@ export function Navbar() {
                 <polyline points="9 22 9 12 15 12 15 22" />
               </svg>
             </div>
-            <span className="font-fraunces font-800 text-xl tracking-tight">Dom</span>
+            <span className="font-fraunces text-xl tracking-tight"><span className="font-800">D</span><span className="font-800 text-dom-primary">o</span><span className="font-800">m</span></span>
           </Link>
 
           <div className="flex items-center gap-3">
