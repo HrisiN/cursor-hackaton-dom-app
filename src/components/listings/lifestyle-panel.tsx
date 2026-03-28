@@ -25,8 +25,8 @@ export function LifestylePanel({ priorities, onChange, enabled, onToggle }: Life
     <div className="rounded-2xl border border-dom-border/60 bg-dom-card p-4 shadow-moss space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="font-fraunces font-700 text-sm">Lifestyle Match</h3>
-          <p className="text-xs text-dom-muted-fg font-nunito">What matters most to you?</p>
+          <h3 className="font-fraunces font-700 text-sm text-dom-fg">Lifestyle Match</h3>
+          <p className="font-nunito text-xs text-dom-muted-fg">What matters most to you?</p>
         </div>
         <button
           onClick={() => onToggle(!enabled)}
@@ -35,7 +35,7 @@ export function LifestylePanel({ priorities, onChange, enabled, onToggle }: Life
           }`}
         >
           <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+            className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform duration-300 ${
               enabled ? "translate-x-6" : "translate-x-1"
             }`}
           />
@@ -46,12 +46,12 @@ export function LifestylePanel({ priorities, onChange, enabled, onToggle }: Life
         <div className="space-y-3">
           {FACTORS.map(({ key, label, Icon }) => (
             <div key={key} className="space-y-1">
-              <div className="flex items-center justify-between text-xs">
-                <span className="flex items-center gap-1.5">
-                  <Icon className="h-3.5 w-3.5 text-emerald-600" />
+              <div className="flex items-center justify-between font-nunito text-xs">
+                <span className="flex items-center gap-1.5 text-dom-fg">
+                  <Icon className="h-3.5 w-3.5 text-dom-primary" />
                   {label}
                 </span>
-                <span className="font-medium text-muted-foreground">{priorities[key]}/7</span>
+                <span className="font-600 text-dom-muted-fg">{priorities[key]}/7</span>
               </div>
               <Slider
                 value={[priorities[key]]}

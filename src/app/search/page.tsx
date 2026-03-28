@@ -17,14 +17,41 @@ import type { LifestylePriorities, ScoredListing } from "@/lib/scoring";
 export default function SearchPage() {
   const searchParams = useSearchParams();
 
-  const [filters, setFilters] = useState<ListingFilters>({
-    deal_type: (searchParams.get("deal_type") as "rent" | "sale") ?? undefined,
-    sort_by: "newest",
+  const [filters, setFilters] = useState<ListingFilters>(() => {
+    const initial: ListingFilters = { sort_by: "newest" };
+    const dealType = searchParams.get("deal_type");
+    if (dealType === "rent" || dealType === "sale") initial.deal_type = dealType;
+
+    const neighborhood = searchParams.get("neighborhood");
+    if (neighborhood) initial.neighborhood = neighborhood;
+
+    const priceMax = searchParams.get("price_max");
+    if (priceMax) initial.price_max = Number(priceMax);
+
+    const priceMin = searchParams.get("price_min");
+    if (priceMin) initial.price_min = Number(priceMin);
+
+    const roomsMin = searchParams.get("rooms_min");
+    if (roomsMin) initial.rooms_min = Number(roomsMin);
+
+    const maxTransit = searchParams.get("max_transit_m");
+    if (maxTransit) initial.max_transit_m = Number(maxTransit);
+
+    const maxKindergarten = searchParams.get("max_kindergarten_m");
+    if (maxKindergarten) initial.max_kindergarten_m = Number(maxKindergarten);
+
+    const maxHospital = searchParams.get("max_hospital_m");
+    if (maxHospital) initial.max_hospital_m = Number(maxHospital);
+
+    const maxPark = searchParams.get("max_park_m");
+    if (maxPark) initial.max_park_m = Number(maxPark);
+
+    return initial;
   });
+
   const [listings, setListings] = useState<Listing[]>([]);
   const [neighborhoods, setNeighborhoods] = useState<Neighborhood[]>([]);
   const [loading, setLoading] = useState(true);
-
   const [lifestyleEnabled, setLifestyleEnabled] = useState(false);
   const [priorities, setPriorities] = useState<LifestylePriorities>(DEFAULT_PRIORITIES);
   const [showMap, setShowMap] = useState(false);
@@ -57,89 +84,114 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-      <AiSearch onFiltersExtracted={handleAiFilters} />
+    <div className="relative min-h-screen bg-dom-bg">
+      {/* Ambient blobs */}
+      <div
+        className="pointer-events-none absolute -top-20 right-0 h-[320px] w-[320px] z-0"
+        style={{
+          background: "rgba(122,158,110,0.08)",
+          borderRadius: "60% 40% 30% 70% / 60% 30% 70% 40%",
+          filter: "blur(48px)",
+        }}
+      />
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
-        <div className="space-y-6">
-          <FilterBar
-            filters={filters}
-            neighborhoods={neighborhoods}
-            onChange={setFilters}
-          />
+      <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        {/* AI Search */}
+        <AiSearch onFiltersExtracted={handleAiFilters} />
 
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">
-              {loading ? "Searching..." : `${scoredListings.length} listings found`}
-            </p>
-            <div className="flex items-center gap-2">
-              {lifestyleEnabled && (
-                <p className="text-xs text-emerald-600 font-medium">
-                  Sorted by Dom Score
-                </p>
-              )}
-              <div className="flex rounded-lg border bg-muted/50 p-0.5">
-                <button
-                  onClick={() => setShowMap(false)}
-                  className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
-                    !showMap ? "bg-white text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <LayoutGrid className="h-3.5 w-3.5" />
-                  Grid
-                </button>
-                <button
-                  onClick={() => setShowMap(true)}
-                  className={`flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
-                    showMap ? "bg-white text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Map className="h-3.5 w-3.5" />
-                  Map
-                </button>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] gap-6">
+          {/* Main column */}
+          <div className="space-y-6">
+            {/* Filters */}
+            <FilterBar
+              filters={filters}
+              neighborhoods={neighborhoods}
+              onChange={setFilters}
+            />
+
+            {/* Results header */}
+            <div className="flex items-center justify-between">
+              <p className="font-nunito text-sm text-dom-muted-fg">
+                {loading ? "Searching..." : `${scoredListings.length} listings found`}
+              </p>
+              <div className="flex items-center gap-3">
+                {lifestyleEnabled && (
+                  <p className="font-nunito text-xs text-dom-primary font-600">
+                    Sorted by Dom Score
+                  </p>
+                )}
+                <div className="flex rounded-full border border-dom-border bg-dom-muted/50 p-0.5">
+                  <button
+                    onClick={() => setShowMap(false)}
+                    className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-nunito font-500 transition-all duration-300 ${
+                      !showMap
+                        ? "bg-dom-card text-dom-fg shadow-moss"
+                        : "text-dom-muted-fg hover:text-dom-fg"
+                    }`}
+                  >
+                    <LayoutGrid className="h-3.5 w-3.5" />
+                    Grid
+                  </button>
+                  <button
+                    onClick={() => setShowMap(true)}
+                    className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-nunito font-500 transition-all duration-300 ${
+                      showMap
+                        ? "bg-dom-card text-dom-fg shadow-moss"
+                        : "text-dom-muted-fg hover:text-dom-fg"
+                    }`}
+                  >
+                    <Map className="h-3.5 w-3.5" />
+                    Map
+                  </button>
+                </div>
               </div>
             </div>
+
+            {/* Results */}
+            {loading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className="animate-pulse rounded-2xl bg-dom-muted h-72"
+                  />
+                ))}
+              </div>
+            ) : scoredListings.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-center">
+                <p className="font-fraunces font-700 text-lg text-dom-fg">No listings found</p>
+                <p className="font-nunito text-sm text-dom-muted-fg mt-1">
+                  Try adjusting your filters or clearing them
+                </p>
+              </div>
+            ) : showMap ? (
+              <div className="h-[600px]">
+                <ListingsMap listings={scoredListings} />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                {scoredListings.map((listing) => (
+                  <ListingCard
+                    key={listing.id}
+                    listing={listing}
+                    showScore={lifestyleEnabled}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="animate-pulse rounded-xl bg-muted h-72" />
-              ))}
-            </div>
-          ) : scoredListings.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 text-center">
-              <p className="text-lg font-semibold">No listings found</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Try adjusting your filters or clearing them
-              </p>
-            </div>
-          ) : showMap ? (
-            <div className="h-[600px]">
-              <ListingsMap listings={scoredListings} />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-              {scoredListings.map((listing) => (
-                <ListingCard
-                  key={listing.id}
-                  listing={listing}
-                  showScore={lifestyleEnabled}
-                />
-              ))}
-            </div>
-          )}
+          {/* Sidebar */}
+          <aside className="space-y-4">
+            <LifestylePanel
+              priorities={priorities}
+              onChange={setPriorities}
+              enabled={lifestyleEnabled}
+              onToggle={setLifestyleEnabled}
+            />
+            <MarketInsight />
+          </aside>
         </div>
-
-        <aside className="space-y-4">
-          <LifestylePanel
-            priorities={priorities}
-            onChange={setPriorities}
-            enabled={lifestyleEnabled}
-            onToggle={setLifestyleEnabled}
-          />
-          <MarketInsight />
-        </aside>
       </div>
     </div>
   );

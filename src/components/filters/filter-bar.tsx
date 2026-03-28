@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import type { ListingFilters, Neighborhood } from "@/types/listing";
 
@@ -76,7 +75,7 @@ function ChipGroup({
 }) {
   return (
     <div className="space-y-1.5">
-      <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+      <span className="font-nunito text-[10px] font-600 text-dom-muted-fg uppercase tracking-widest">
         {label}
       </span>
       <div className="flex flex-wrap gap-1.5">
@@ -88,7 +87,7 @@ function ChipGroup({
               "rounded-full px-3 py-1.5 text-xs font-nunito font-600 transition-all duration-300",
               selected === opt.value || (selected === undefined && opt.value === undefined)
                 ? "bg-dom-primary text-white shadow-moss"
-                : "bg-dom-muted text-dom-muted-fg hover:border-dom-primary/40 hover:text-dom-fg"
+                : "border border-dom-border bg-white/70 text-dom-muted-fg hover:border-dom-primary/40 hover:text-dom-fg"
             )}
           >
             {opt.label}
@@ -114,7 +113,7 @@ export function FilterBar({ filters, neighborhoods, onChange }: FilterBarProps) 
   );
 
   return (
-    <div className="space-y-4 rounded-2xl border border-dom-border/60 bg-dom-card p-4 shadow-moss">
+    <div className="space-y-4 rounded-2xl border border-dom-border/60 bg-dom-card p-5 shadow-moss">
       {/* Row 1: Deal type + Neighborhood */}
       <div className="flex flex-wrap items-end gap-6">
         <ChipGroup
@@ -129,13 +128,13 @@ export function FilterBar({ filters, neighborhoods, onChange }: FilterBarProps) 
         />
 
         <div className="space-y-1.5">
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <span className="font-nunito text-[10px] font-600 text-dom-muted-fg uppercase tracking-widest">
             Neighborhood
           </span>
           <select
             value={filters.neighborhood ?? ""}
             onChange={(e) => onChange({ ...filters, neighborhood: e.target.value || undefined })}
-            className="rounded-full border bg-muted px-3 py-1.5 text-xs font-medium text-foreground"
+            className="rounded-full border border-dom-border bg-white/70 px-3 py-1.5 text-xs font-nunito font-600 text-dom-fg transition-all duration-300 hover:border-dom-primary/40 outline-none focus:ring-1 focus:ring-dom-primary/30"
           >
             <option value="">All neighborhoods</option>
             {neighborhoods.map((n) => (
@@ -150,7 +149,7 @@ export function FilterBar({ filters, neighborhoods, onChange }: FilterBarProps) 
       {/* Row 2: Price + Area + Rooms */}
       <div className="flex flex-wrap items-end gap-6">
         <div className="space-y-1.5">
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <span className="font-nunito text-[10px] font-600 text-dom-muted-fg uppercase tracking-widest">
             Price
           </span>
           <div className="flex flex-wrap gap-1.5">
@@ -165,7 +164,7 @@ export function FilterBar({ filters, neighborhoods, onChange }: FilterBarProps) 
                   "rounded-full px-3 py-1.5 text-xs font-nunito font-600 transition-all duration-300",
                   activePriceChip === chip
                     ? "bg-dom-primary text-white shadow-moss"
-                    : "bg-dom-muted text-dom-muted-fg hover:border-dom-primary/40 hover:text-dom-fg"
+                    : "border border-dom-border bg-white/70 text-dom-muted-fg hover:border-dom-primary/40 hover:text-dom-fg"
                 )}
               >
                 {chip.label}
@@ -177,7 +176,7 @@ export function FilterBar({ filters, neighborhoods, onChange }: FilterBarProps) 
                 "rounded-full px-3 py-1.5 text-xs font-nunito font-600 transition-all duration-300",
                 showCustomPrice || (!activePriceChip && (filters.price_min != null || filters.price_max != null))
                   ? "bg-dom-primary text-white shadow-moss"
-                  : "bg-dom-muted text-dom-muted-fg hover:border-dom-primary/40 hover:text-dom-fg"
+                  : "border border-dom-border bg-white/70 text-dom-muted-fg hover:border-dom-primary/40 hover:text-dom-fg"
               )}
             >
               Custom
@@ -190,23 +189,23 @@ export function FilterBar({ filters, neighborhoods, onChange }: FilterBarProps) 
                 placeholder="Min"
                 value={filters.price_min ?? ""}
                 onChange={(e) => onChange({ ...filters, price_min: e.target.value ? Number(e.target.value) : undefined })}
-                className="w-24 h-8 text-xs rounded-full"
+                className="w-24 h-8 text-xs rounded-full border-dom-border font-nunito"
               />
-              <span className="text-xs text-muted-foreground">–</span>
+              <span className="text-xs text-dom-muted-fg">–</span>
               <Input
                 type="number"
                 placeholder="Max"
                 value={filters.price_max ?? ""}
                 onChange={(e) => onChange({ ...filters, price_max: e.target.value ? Number(e.target.value) : undefined })}
-                className="w-24 h-8 text-xs rounded-full"
+                className="w-24 h-8 text-xs rounded-full border-dom-border font-nunito"
               />
-              <span className="text-xs text-muted-foreground">€</span>
+              <span className="text-xs text-dom-muted-fg">€</span>
             </div>
           )}
         </div>
 
         <div className="space-y-1.5">
-          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <span className="font-nunito text-[10px] font-600 text-dom-muted-fg uppercase tracking-widest">
             Area
           </span>
           <div className="flex flex-wrap gap-1.5">
@@ -221,7 +220,7 @@ export function FilterBar({ filters, neighborhoods, onChange }: FilterBarProps) 
                   "rounded-full px-3 py-1.5 text-xs font-nunito font-600 transition-all duration-300",
                   activeAreaChip === chip
                     ? "bg-dom-primary text-white shadow-moss"
-                    : "bg-dom-muted text-dom-muted-fg hover:border-dom-primary/40 hover:text-dom-fg"
+                    : "border border-dom-border bg-white/70 text-dom-muted-fg hover:border-dom-primary/40 hover:text-dom-fg"
                 )}
               >
                 {chip.label}
@@ -233,7 +232,7 @@ export function FilterBar({ filters, neighborhoods, onChange }: FilterBarProps) 
                 "rounded-full px-3 py-1.5 text-xs font-nunito font-600 transition-all duration-300",
                 showCustomArea || (!activeAreaChip && (filters.area_min != null || filters.area_max != null))
                   ? "bg-dom-primary text-white shadow-moss"
-                  : "bg-dom-muted text-dom-muted-fg hover:border-dom-primary/40 hover:text-dom-fg"
+                  : "border border-dom-border bg-white/70 text-dom-muted-fg hover:border-dom-primary/40 hover:text-dom-fg"
               )}
             >
               Custom
@@ -246,17 +245,17 @@ export function FilterBar({ filters, neighborhoods, onChange }: FilterBarProps) 
                 placeholder="Min"
                 value={filters.area_min ?? ""}
                 onChange={(e) => onChange({ ...filters, area_min: e.target.value ? Number(e.target.value) : undefined })}
-                className="w-24 h-8 text-xs rounded-full"
+                className="w-24 h-8 text-xs rounded-full border-dom-border font-nunito"
               />
-              <span className="text-xs text-muted-foreground">–</span>
+              <span className="text-xs text-dom-muted-fg">–</span>
               <Input
                 type="number"
                 placeholder="Max"
                 value={filters.area_max ?? ""}
                 onChange={(e) => onChange({ ...filters, area_max: e.target.value ? Number(e.target.value) : undefined })}
-                className="w-24 h-8 text-xs rounded-full"
+                className="w-24 h-8 text-xs rounded-full border-dom-border font-nunito"
               />
-              <span className="text-xs text-muted-foreground">m²</span>
+              <span className="text-xs text-dom-muted-fg">m²</span>
             </div>
           )}
         </div>
@@ -297,8 +296,8 @@ export function FilterBar({ filters, neighborhoods, onChange }: FilterBarProps) 
         />
       </div>
 
-      {/* Row 4: Sort */}
-      <div className="flex items-center justify-between border-t pt-3">
+      {/* Row 4: Sort + Clear */}
+      <div className="flex items-center justify-between border-t border-dom-border pt-3">
         <ChipGroup
           label="Sort by"
           options={SORT_OPTIONS.map((s) => ({ label: s.label, value: s.value }))}
@@ -307,7 +306,7 @@ export function FilterBar({ filters, neighborhoods, onChange }: FilterBarProps) 
         />
         <button
           onClick={() => onChange({ sort_by: "newest" })}
-          className="text-xs text-muted-foreground hover:text-foreground underline"
+          className="font-nunito text-xs text-dom-muted-fg hover:text-dom-primary underline transition-all duration-300"
         >
           Clear all
         </button>

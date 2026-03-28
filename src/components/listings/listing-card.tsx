@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -42,18 +41,18 @@ export function ListingCard({ listing, showScore }: ListingCardProps) {
 
   return (
     <Link href={`/listing/${listing.id}`}>
-      <Card className="group overflow-hidden transition-all duration-350 hover:shadow-clay hover:-translate-y-1 hover:border-dom-primary/30 py-0 gap-0 border-dom-border/60 bg-dom-card">
-        <div className="relative aspect-[16/10] overflow-hidden bg-muted">
+      <Card className="group overflow-hidden transition-all duration-350 hover:-translate-y-1 hover:shadow-clay hover:border-dom-primary/30 py-0 gap-0 border-dom-border/60 bg-dom-card rounded-2xl">
+        <div className="relative aspect-[16/10] overflow-hidden bg-dom-muted">
           <img
             src={imageUrl}
             alt={listing.title}
-            className="h-full w-full object-cover transition-transform group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
-          <div className="absolute top-2 left-2 flex gap-1.5">
+          <div className="absolute top-2.5 left-2.5 flex gap-1.5">
             <Badge
               variant="secondary"
               className={cn(
-                "text-[10px] font-semibold uppercase",
+                "text-[10px] font-nunito font-600 uppercase rounded-full",
                 listing.deal_type === "rent"
                   ? "bg-dom-primary text-white"
                   : "bg-dom-secondary text-white"
@@ -61,55 +60,56 @@ export function ListingCard({ listing, showScore }: ListingCardProps) {
             >
               {listing.deal_type === "rent" ? "Rent" : "Sale"}
             </Badge>
-            <Badge variant="secondary" className="bg-white/90 text-[10px] text-foreground backdrop-blur-sm">
+            <Badge variant="secondary" className="bg-white/90 text-[10px] font-nunito font-500 text-dom-fg backdrop-blur-sm rounded-full">
               {listing.source}
             </Badge>
           </div>
-          <div className="absolute bottom-2 right-2">
-            <span className="rounded-md bg-black/60 px-2 py-1 text-xs font-semibold text-white backdrop-blur-sm">
+          <div className="absolute bottom-2.5 right-2.5">
+            <span className="rounded-full bg-dom-fg/75 px-3 py-1.5 font-fraunces font-700 text-sm text-white backdrop-blur-sm">
               {formatPrice(listing.price, listing.deal_type)}
             </span>
           </div>
         </div>
-        <CardContent className="p-3 space-y-2">
-          <h3 className="font-semibold text-sm leading-tight line-clamp-2">
+        <CardContent className="p-4 space-y-2.5">
+          <h3 className="font-fraunces font-700 text-sm leading-tight line-clamp-2 text-dom-fg">
             {listing.title}
           </h3>
-          <p className="text-xs text-muted-foreground">
+          <p className="font-nunito text-xs text-dom-muted-fg">
             {listing.neighborhood ?? listing.city}
             {listing.address ? ` · ${listing.address}` : ""}
           </p>
-          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+          <div className="flex flex-wrap gap-2 font-nunito text-xs text-dom-muted-fg">
             {listing.area_m2 && <span>{listing.area_m2} m²</span>}
             {listing.rooms && <span>· {listing.rooms} {listing.rooms === 1 ? "room" : "rooms"}</span>}
             {listing.price_per_m2 && <span>· €{listing.price_per_m2}/m²</span>}
           </div>
 
           {showScore && (
-            <div className="space-y-1.5 pt-1 border-t">
+            <div className="space-y-2 pt-2 border-t border-dom-border/50">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold">Dom Score</span>
-                <span
-                  className={cn(
-                    "text-sm font-fraunces font-700",
+                <span className="font-nunito text-xs font-600 text-dom-fg">Dom Score</span>
+                <span className="inline-flex items-center gap-1 font-fraunces font-700 text-sm">
+                  <span className="text-dom-primary text-[10px]">◆</span>
+                  <span className={cn(
                     listing.domScore >= 75 ? "text-dom-primary" :
                     listing.domScore >= 50 ? "text-dom-secondary" : "text-red-500"
-                  )}
-                >
-                  {listing.domScore}/100
+                  )}>
+                    {listing.domScore}
+                  </span>
+                  <span className="text-dom-muted-fg font-400 text-xs">/100</span>
                 </span>
               </div>
-              <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
+              <div className="h-1.5 w-full rounded-full bg-dom-muted overflow-hidden">
                 <div
                   className={cn(
-                    "h-full rounded-full transition-all",
+                    "h-full rounded-full transition-all duration-500",
                     listing.domScore >= 75 ? "bg-dom-primary" :
                     listing.domScore >= 50 ? "bg-dom-secondary" : "bg-red-400"
                   )}
                   style={{ width: `${listing.domScore}%` }}
                 />
               </div>
-              <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-[10px] text-muted-foreground">
+              <div className="flex flex-wrap gap-x-3 gap-y-0.5 font-nunito text-[10px] text-dom-muted-fg">
                 {listing.nearest_transit_m != null && (
                   <span>Transit {proximityLabel(listing.nearest_transit_m)}</span>
                 )}
@@ -123,7 +123,7 @@ export function ListingCard({ listing, showScore }: ListingCardProps) {
             </div>
           )}
 
-          <p className="text-[10px] text-muted-foreground/60">
+          <p className="font-nunito text-[10px] text-dom-muted-fg/60">
             {timeAgo(listing.scraped_at)}
           </p>
         </CardContent>
