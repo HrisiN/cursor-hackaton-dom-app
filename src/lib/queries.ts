@@ -18,6 +18,17 @@ function filterMockListings(listings: Listing[], filters: ListingFilters): Listi
   if (filters.max_transit_m != null) result = result.filter((l) => (l.nearest_transit_m ?? Infinity) <= filters.max_transit_m!);
   if (filters.max_park_m != null) result = result.filter((l) => (l.nearest_park_m ?? Infinity) <= filters.max_park_m!);
 
+  if (filters.text_query) {
+    const terms = filters.text_query.toLowerCase().split(/\s+/).filter(Boolean);
+    result = result.filter((l) => {
+      const haystack = [l.title, l.description, l.address, l.neighborhood, l.city]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      return terms.every((t) => haystack.includes(t));
+    });
+  }
+
   switch (filters.sort_by) {
     case "price_asc":
       result.sort((a, b) => a.price - b.price);

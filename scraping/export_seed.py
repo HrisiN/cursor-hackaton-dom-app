@@ -7,7 +7,8 @@ from supabase import create_client
 
 COLS = [
     "external_id", "source", "url", "title", "deal_type", "price", "currency",
-    "area_m2", "rooms", "address", "city", "latitude", "longitude",
+    "area_m2", "rooms", "floor", "total_floors", "year_built", "furnished",
+    "address", "city", "latitude", "longitude",
     "images", "description", "is_active",
 ]
 
