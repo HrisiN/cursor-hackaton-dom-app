@@ -145,8 +145,8 @@ export function MarketInsight() {
       </div>
 
       {/* Chart */}
-      <div className="h-[140px] -mx-1">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-[140px] -mx-1" style={{ minWidth: 0, minHeight: 0 }}>
+        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
           <AreaChart data={data} margin={{ top: 4, right: 4, bottom: 0, left: -20 }}>
             <defs>
               <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
