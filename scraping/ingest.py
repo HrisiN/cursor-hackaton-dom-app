@@ -1,9 +1,9 @@
 """
-Dom — Listing ingestion orchestrator.
+Dom - Listing ingestion orchestrator.
 
 Usage:
     python ingest.py                  # run all active adapters
-    python ingest.py --source njuskalo # run one adapter
+    python ingest.py --source index-hr   # Index: default 30 sale + 30 rent (see .env.example)
 
 Each adapter must implement:
     def fetch_listings() -> list[dict]
@@ -18,19 +18,16 @@ import os
 import sys
 from datetime import datetime, timezone
 
-from dotenv import load_dotenv
 from supabase import create_client
 
-load_dotenv()
+from env_load import require_supabase
 
-SUPABASE_URL = os.environ["SUPABASE_URL"]
-SUPABASE_KEY = os.environ["SUPABASE_SERVICE_KEY"]
-
+SUPABASE_URL, SUPABASE_KEY = require_supabase()
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 ADAPTER_REGISTRY: dict[str, str] = {
-    "njuskalo": "adapters.njuskalo_adapter",
-    # "index-hr": "adapters.index_adapter",
+    # "njuskalo": "adapters.njuskalo_adapter",  # template placeholder
+    "index-hr": "adapters.index_adapter",
     # "century21": "adapters.century21_adapter",
 }
 
@@ -89,3 +86,7 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+
+

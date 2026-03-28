@@ -45,6 +45,7 @@ scraping/venv/
 scraping/__pycache__/
 scraping/adapters/__pycache__/
 *.pyc
+scraping/.playwright-index-profile/
 
 # vercel
 .vercel

@@ -1,0 +1,32 @@
+﻿[
+  {
+    "external_id": "7180420",
+    "title": "Strogi centar Zagreba, Senoina ulica (sample)",
+    "deal_type": "sale",
+    "price": 194000,
+    "currency": "EUR",
+    "url": "https://www.index.hr/oglasi/nekretnine/prodaja-stanova/oglas/strogi-centar-zagreba-senoina-ulica/7180420",
+    "city": "Zagreb",
+    "address": "Senoina ulica, Zagreb",
+    "latitude": 45.8131,
+    "longitude": 15.9785,
+    "area_m2": 42,
+    "rooms": 2,
+    "description": "Offline fixture — replace with live ingest after capturing Index API in DevTools."
+  },
+  {
+    "external_id": "IX-DEMO-2",
+    "title": "Fixture stan Trešnjevka (sample)",
+    "deal_type": "sale",
+    "price": 165000,
+    "currency": "EUR",
+    "url": "https://www.index.hr/oglasi/",
+    "city": "Zagreb",
+    "address": "Ozaljska 12, Zagreb",
+    "latitude": 45.804,
+    "longitude": 15.956,
+    "area_m2": 55,
+    "rooms": 2,
+    "description": "Second offline row for UI testing."
+  }
+]

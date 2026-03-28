@@ -13,14 +13,13 @@ For the prototype, we compute all distances in Python using the Haversine formul
 """
 
 import math
-import os
 
-from dotenv import load_dotenv
 from supabase import create_client
 
-load_dotenv()
+from env_load import require_supabase
 
-supabase = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"])
+_supabase_url, _supabase_key = require_supabase()
+supabase = create_client(_supabase_url, _supabase_key)
 
 POI_TYPES = ["kindergarten", "school", "hospital", "transit_stop", "park"]
 COLUMN_MAP = {

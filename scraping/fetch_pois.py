@@ -11,15 +11,19 @@ Requires GOOGLE_MAPS_SERVER_KEY in .env
 """
 
 import os
+import sys
 
 import requests
-from dotenv import load_dotenv
 from supabase import create_client
 
-load_dotenv()
+from env_load import require_supabase
 
-supabase = create_client(os.environ["SUPABASE_URL"], os.environ["SUPABASE_SERVICE_KEY"])
-API_KEY = os.environ["GOOGLE_MAPS_SERVER_KEY"]
+_supabase_url, _supabase_key = require_supabase()
+supabase = create_client(_supabase_url, _supabase_key)
+API_KEY = os.getenv("GOOGLE_MAPS_SERVER_KEY", "").strip()
+if not API_KEY:
+    print("Missing GOOGLE_MAPS_SERVER_KEY in scraping/.env", file=sys.stderr)
+    sys.exit(1)
 
 ZAGREB_CENTER = (45.8150, 15.9819)
 SEARCH_RADIUS_M = 12000
