@@ -8,7 +8,7 @@ import { Providers } from "@/components/layout/providers";
 const fraunces = Fraunces({
   variable: "--font-fraunces",
   subsets: ["latin", "latin-ext"],
-  weight: ["400", "600", "700", "800"],
+  weight: ["400", "600", "700", "800", "900"],
   display: "swap",
 });
 
