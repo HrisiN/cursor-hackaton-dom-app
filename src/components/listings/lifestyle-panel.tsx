@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { Slider } from "@/components/ui/slider";
-import { TramFront, GraduationCap, Cross, TreePine, Coins } from "lucide-react";
+import { TramFront, GraduationCap, Cross, TreePine, Coins, Sparkles } from "lucide-react";
 import type { LifestylePriorities } from "@/lib/scoring";
 import type { LucideIcon } from "lucide-react";
 import type { Listing } from "@/types/listing";
@@ -11,6 +11,8 @@ interface LifestylePanelProps {
   priorities: LifestylePriorities;
   onChange: (priorities: LifestylePriorities) => void;
   listings: Listing[];
+  enabled: boolean;
+  onEnable: () => void;
 }
 
 const FACTORS: { key: keyof LifestylePriorities; label: string; Icon: LucideIcon }[] = [
@@ -66,7 +68,7 @@ function computeAverageScore(listings: Listing[], priorities: LifestylePrioritie
   return Math.round(totalScore / listings.length);
 }
 
-export function LifestylePanel({ priorities, onChange, listings }: LifestylePanelProps) {
+export function LifestylePanel({ priorities, onChange, listings, enabled, onEnable }: LifestylePanelProps) {
   const avgScore = useMemo(
     () => computeAverageScore(listings, priorities),
     [listings, priorities]
@@ -77,11 +79,42 @@ export function LifestylePanel({ priorities, onChange, listings }: LifestylePane
   const barColor =
     avgScore >= 75 ? "bg-dom-primary" : avgScore >= 50 ? "bg-dom-secondary" : "bg-red-400";
 
+  if (!enabled) {
+    return (
+      <button
+        onClick={onEnable}
+        className="w-full rounded-2xl border border-dashed border-dom-border/60 bg-dom-card/50 p-4 shadow-moss transition-all duration-300 hover:border-dom-primary/40 hover:bg-dom-card group text-left space-y-2"
+      >
+        <div className="flex items-center gap-2">
+          <Sparkles className="h-4 w-4 text-dom-muted-fg group-hover:text-dom-primary transition-colors" />
+          <h3 className="font-fraunces font-700 text-sm text-dom-muted-fg group-hover:text-dom-fg transition-colors">
+            Dom Lifestyle Score
+          </h3>
+        </div>
+        <p className="font-nunito text-xs text-dom-muted-fg">
+          Enable to rank listings by what matters to you — transport, schools, parks, hospitals & price.
+        </p>
+        <span className="inline-flex items-center gap-1 rounded-full bg-dom-primary/10 px-3 py-1 font-nunito text-[11px] font-600 text-dom-primary">
+          <Sparkles className="h-3 w-3" />
+          Click to activate
+        </span>
+      </button>
+    );
+  }
+
   return (
-    <div className="rounded-2xl border border-dom-border/60 bg-dom-card p-4 shadow-moss space-y-4">
-      <div>
-        <h3 className="font-fraunces font-700 text-sm text-dom-fg">Dom Lifestyle Score</h3>
-        <p className="font-nunito text-xs text-dom-muted-fg">Adjust what matters most to you</p>
+    <div className="rounded-2xl border border-dom-primary/30 bg-dom-card p-4 shadow-moss space-y-4 ring-2 ring-dom-primary/10">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4 text-dom-primary" />
+            <h3 className="font-fraunces font-700 text-sm text-dom-fg">Dom Lifestyle Score</h3>
+          </div>
+          <p className="font-nunito text-xs text-dom-muted-fg mt-0.5">Adjust what matters most to you</p>
+        </div>
+        <span className="rounded-full bg-dom-primary/15 px-2 py-0.5 font-nunito text-[10px] font-600 text-dom-primary uppercase tracking-wider">
+          Active
+        </span>
       </div>
 
       {/* Live score display */}

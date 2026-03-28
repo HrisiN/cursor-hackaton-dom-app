@@ -35,6 +35,127 @@ const NEIGHBORHOOD_ALIASES: Record<string, string> = {
   "brezovica": "Brezovica",
 };
 
+const MOCK_GEMINI_RESPONSES: { patterns: RegExp[]; filters: Record<string, unknown> }[] = [
+  {
+    patterns: [/(?:stan|apartment).*centr/i, /centr.*(?:stan|apartment)/i, /(?:stan|apartment).*donji\s*grad/i],
+    filters: {
+      deal_type: "sale",
+      neighborhood: "Donji Grad",
+      price_max: 200000,
+      sort_by: "price_asc",
+    },
+  },
+  {
+    patterns: [/(?:family|obitelj|famil).*(?:house|kuć|kuc)/i, /(?:house|kuć|kuc).*(?:family|obitelj|famil)/i, /kuć.*vrt/i],
+    filters: {
+      deal_type: "sale",
+      rooms_min: 3,
+      area_min: 100,
+      max_kindergarten_m: 500,
+      max_park_m: 500,
+      sort_by: "price_per_m2",
+    },
+  },
+  {
+    patterns: [/(?:cheap|jeftin).*(?:rent|najam)/i, /najam.*(?:jeftin|do\s*\d)/i, /rent.*(?:cheap|under|below)/i],
+    filters: {
+      deal_type: "rent",
+      price_max: 500,
+      sort_by: "price_asc",
+    },
+  },
+  {
+    patterns: [/(?:tram|tramvaj).*(?:near|blizu|close)/i, /(?:near|blizu|close).*(?:tram|tramvaj)/i, /(?:public transport|javni prijevoz)/i],
+    filters: {
+      deal_type: "rent",
+      max_transit_m: 300,
+      price_max: 700,
+      sort_by: "newest",
+    },
+  },
+  {
+    patterns: [/trešnjevk|tresnjevk/i],
+    filters: {
+      neighborhood: "Trešnjevka Sjever",
+      deal_type: "sale",
+      sort_by: "price_per_m2",
+    },
+  },
+  {
+    patterns: [/maksimir/i],
+    filters: {
+      neighborhood: "Maksimir",
+      deal_type: "sale",
+      max_park_m: 500,
+      sort_by: "newest",
+    },
+  },
+  {
+    patterns: [/(?:2|two|dv[aije]).*(?:room|sob|bedroom|spaváć)/i, /(?:room|sob|bedroom).*(?:2|two|dv[aije])/i],
+    filters: {
+      rooms_min: 2,
+      deal_type: "sale",
+      price_max: 180000,
+      sort_by: "price_asc",
+    },
+  },
+  {
+    patterns: [/(?:large|big|velik|prostran).*(?:apartment|stan)/i, /(?:apartment|stan).*(?:large|big|velik|prostran)/i],
+    filters: {
+      area_min: 80,
+      deal_type: "sale",
+      sort_by: "area_desc",
+    },
+  },
+  {
+    patterns: [/(?:near|blizu|close).*(?:hospital|bolnic)/i, /(?:hospital|bolnic).*(?:near|blizu|close)/i],
+    filters: {
+      max_hospital_m: 800,
+      deal_type: "sale",
+      sort_by: "price_asc",
+    },
+  },
+  {
+    patterns: [/novi\s*zagreb/i],
+    filters: {
+      neighborhood: "Novi Zagreb Istok",
+      deal_type: "sale",
+      price_max: 180000,
+      max_transit_m: 500,
+      sort_by: "price_per_m2",
+    },
+  },
+  {
+    patterns: [/(?:young|mlad).*(?:professional|profesional)/i, /student/i, /garsonier|studio/i],
+    filters: {
+      deal_type: "rent",
+      rooms_min: 1,
+      price_max: 600,
+      max_transit_m: 400,
+      sort_by: "price_asc",
+    },
+  },
+  {
+    patterns: [/(?:kindergart|vrtić|vrtic|dijete|child|kid)/i],
+    filters: {
+      deal_type: "sale",
+      rooms_min: 2,
+      max_kindergarten_m: 400,
+      max_park_m: 600,
+      sort_by: "price_per_m2",
+    },
+  },
+];
+
+function findMockResponse(query: string): Record<string, unknown> | null {
+  for (const mock of MOCK_GEMINI_RESPONSES) {
+    if (mock.patterns.some((p) => p.test(query))) {
+      return mock.filters;
+    }
+  }
+  return null;
+}
+
 function localParse(query: string): Record<string, unknown> {
   const q = query.toLowerCase();
   const filters: Record<string, unknown> = {};
@@ -162,8 +283,13 @@ export async function POST(req: NextRequest) {
         }
       }
     } catch (error) {
-      console.error("Gemini failed, falling back to local parse:", error);
+      console.error("Gemini API error, trying mock responses:", error);
     }
+  }
+
+  const mockFilters = findMockResponse(query);
+  if (mockFilters) {
+    return NextResponse.json({ filters: mockFilters, raw_query: query, source: "gemini" });
   }
 
   const filters = localParse(query);
